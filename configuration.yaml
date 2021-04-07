@@ -5,3 +5,18 @@
 homeassistant:
   # Load packages
   packages: !include_dir_named integrations
+
+  # Lets me customize individual entities
+  customize: !include_dir_merge_named customization/entities
+
+  # Home zone settings
+  name: Home
+  latitude: !secret zone_home_latitude
+  longitude: !secret zone_home_longitude
+  elevation: 6
+
+  unit_system: metric
+  time_zone: Europe/Brussels
+
+  external_url: !secret homeassistant_external_url
+  internal_url: !secret homeassistant_internal_url
