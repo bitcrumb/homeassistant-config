@@ -1,0 +1,15 @@
+---
+# Living room light groups
+#
+# https://www.home-assistant.io/integrations/light.group/
+#
+- platform: group
+  name: TV Spots
+  entities:
+    - light.54802417d8f15b94e71a
+    - light.68426301c44f33cdba74
+    - light.548024172462ab336a5c
+- platform: group
+  name: TV LED Strip
+  entities:
+    - light.bf5b0a8c54f26a1ad0n0lg

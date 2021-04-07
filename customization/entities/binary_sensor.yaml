@@ -1,0 +1,9 @@
+---
+# Customize some of the binary_sensor entities in Home Assistant
+#
+# https://www.home-assistant.io/docs/configuration/customizing-devices/
+#
+binary_sensor.playstation_4:
+  icon: mdi:google-controller
+binary_sensor.playstation_5:
+  icon: mdi:google-controller

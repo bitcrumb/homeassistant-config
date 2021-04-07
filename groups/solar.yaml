@@ -1,0 +1,12 @@
+---
+pv:
+  name: Solar Panels
+  entities:
+    - sensor.pv_soc
+    - sensor.pv_eday
+    - sensor.pv_etotal
+    - sensor.pv_iday
+    - sensor.pv_itotal
+    - sensor.pv_power_output
+    - sensor.pv_excess
+    - sensor.pv_temperature

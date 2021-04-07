@@ -1,0 +1,14 @@
+---
+# The history_stats sensor platform provides quick statistics about
+# another integration or platforms, using data from the history integration.
+#
+# https://www.home-assistant.io/integrations/history_stats/
+#
+- platform: history_stats
+  name: TV watched (last 7 days)
+  entity_id: media_player.samsung_tv
+  state: "on"
+  type: time
+  duration:
+    days: 7
+  end: "{{ now() }}"

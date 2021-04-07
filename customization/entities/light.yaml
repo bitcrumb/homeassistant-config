@@ -1,0 +1,15 @@
+---
+# Customize some of the light entities in Home Assistant
+#
+# https://www.home-assistant.io/docs/configuration/customizing-devices/
+#
+light.tv_spots:
+  icon: mdi:spotlight-beam
+light.tv_led_strip:
+  icon: mdi:led-strip-variant
+light.fridge_lights:
+  icon: mdi:spotlight-beam
+light.office_ceiling_lights:
+  icon: mdi:spotlight-beam
+light.office_wall_lights:
+  icon: mdi:spotlight-beam

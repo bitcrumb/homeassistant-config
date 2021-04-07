@@ -1,0 +1,16 @@
+---
+# Office light groups
+#
+# https://www.home-assistant.io/integrations/light.group/
+#
+- platform: group
+  name: Office Ceiling Lights
+  entities:
+    - light.020836852462ab54b0cb
+    - light.14877506c82b96c31697
+    - light.14877506d8f15bb91b9c
+- platform: group
+  name: Office Wall Lights
+  entities:
+    - light.020836852462ab549b7f
+    - light.020836852462ab549aee

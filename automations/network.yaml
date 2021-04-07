@@ -1,0 +1,14 @@
+---
+- id: '1616785361376'
+  alias: Notify when external IP-address changes
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: sensor.public_ip_address
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      title: 🌐 IP-address change
+      message: New external IP address is {{ states('sensor.public_ip_address') }}
+  mode: single

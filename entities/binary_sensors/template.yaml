@@ -1,0 +1,15 @@
+---
+# The template platform supports binary sensors which get their values from other entities.
+#
+# https://www.home-assistant.io/integrations/binary_sensor.template/
+#
+- platform: template
+  sensors:
+    no_one_home:
+      friendly_name: "No one at home"
+      icon_template: mdi:home-remove-outline
+      value_template: >
+        {{
+          not is_state("person.lode_vanhove", "home")
+          and not is_state("person.ellen_ophalvens", "home")
+        }}

@@ -1,0 +1,48 @@
+---
+- id: '1616786307664'
+  alias: The battery of Otis' iPad is very low (< 20%)
+  description: ''
+  trigger:
+  - type: battery_level
+    platform: device
+    device_id: 00abdcbd4bd808dbd9f96794ceff6b3f
+    entity_id: sensor.ipad_otis_battery_state
+    domain: sensor
+    below: 20
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: The battery of Otis' iPad is very low.
+      title: 🔋 Battery low!
+      data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1
+  mode: single
+
+- id: '1616786351023'
+  alias: The battery of Juna's iPad is very low (< 20%)
+  description: ''
+  trigger:
+  - type: battery_level
+    platform: device
+    device_id: c2581b62ba631ae3a85e0f61b9695868
+    entity_id: sensor.ipad_juna_battery_state
+    domain: sensor
+    below: 20
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      message: The battery of Juna's iPad is very low.
+      title: 🔋 Battery low!
+      data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1
+  mode: single

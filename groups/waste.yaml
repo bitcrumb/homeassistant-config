@@ -1,0 +1,8 @@
+---
+waste:
+  name: Waste Collection
+  entities:
+    - sensor.recycleapp_glas
+    - sensor.recycleapp_papier
+    - sensor.recycleapp_pmd
+    - sensor.recycleapp_restafval

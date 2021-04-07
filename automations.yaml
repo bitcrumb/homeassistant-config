@@ -1,0 +1,15 @@
+---
+- id: '1616786897059'
+  alias: Daily notification of solar panel energy production & income
+  description: ''
+  trigger:
+  - platform: time
+    at: '21:00:00'
+  condition: []
+  action:
+  - service: notify.notify
+    data:
+      title: ⚡️ Daily solar panel production
+      message: Your solar panels produced {{ states('sensor.pv_eday') }}KWh today,
+        this equals {{ states('sensor.pv_iday') }}€.
+  mode: single

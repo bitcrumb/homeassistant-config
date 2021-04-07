@@ -1,0 +1,10 @@
+---
+# Crude sensor for Home Assistant that scrapes from GoodWe SEMS portal.
+#
+# https://github.com/TimSoethout/goodwe-sems-home-assistant
+#
+- platform: sems
+  username: !secret sems_username
+  password: !secret sems_password
+  station_id: !secret sems_station_id
+  scan_interval: 60

@@ -1,0 +1,6 @@
+---
+# The season sensor will display the current astronomical or meteorological season.
+#
+# https://www.home-assistant.io/integrations/season/
+#
+- platform: season

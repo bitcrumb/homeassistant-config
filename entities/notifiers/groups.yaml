@@ -1,0 +1,15 @@
+---
+# Grouping notifiy devices for easy access, since you can't change the entity IDs
+#
+# https://www.home-assistant.io/integrations/notify.group/
+#
+- platform: group
+  name: "Lode Devices"
+  services:
+    - service: mobile_app_iphone_12_pro_max_lode
+    - service: mobile_app_macbook_pro_lode
+
+- platform: group
+  name: "Ellen Devices"
+  services:
+    - service: mobile_app_huawei_ellen

@@ -1,0 +1,10 @@
+---
+# The notify TTS platform lets you use the TTS integration Service Say and
+# a media_player to alert you of important events.
+#
+# https://www.home-assistant.io/integrations/notify.tts/
+#
+- platform: tts
+  name: Sonos
+  tts_service: tts.google_translate_say
+  media_player: media_player.living_room

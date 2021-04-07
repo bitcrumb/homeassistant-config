@@ -1,0 +1,5 @@
+---
+external_ip:
+  name: External IP
+  entities:
+    - sensor.public_ip_address

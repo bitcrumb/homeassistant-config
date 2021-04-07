@@ -1,0 +1,13 @@
+---
+# Define some binary_sensor entities by sending a ping to detect availability.
+#
+# https://www.home-assistant.io/integrations/ping/
+#
+- platform: ping
+  host: !secret ip_playstation_4
+  name: Playstation 4
+  scan_interval: 30
+- platform: ping
+  host: !secret ip_playstation_5
+  name: Playstation 5
+  scan_interval: 30

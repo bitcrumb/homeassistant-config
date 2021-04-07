@@ -1,0 +1,16 @@
+---
+# Afvalbeheer
+# 
+# https://github.com/pippyn/Home-Assistant-Sensor-Afvalbeheer
+#
+- platform: afvalbeheer
+  wastecollector: RecycleApp
+  resources:
+    - restafval
+    - papier
+    - pmd
+    - glas
+  postcode: 9800
+  streetnumber: 24
+  streetname: Kleine Oostkouter
+  cityname: Petegem-aan-de-Leie

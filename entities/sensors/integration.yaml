@@ -1,0 +1,20 @@
+---
+# The integration platform provides the Riemann sum of the values provided by a source sensor. 
+#
+# https://www.home-assistant.io/integrations/integration/
+#
+
+# Sensor for Riemann sum of energy bought (W -> Wh)
+- platform: integration
+  source: sensor.energy_buy
+  name: energy_buy_sum
+  unit_prefix: k
+  round: 1
+  method: left
+# Sensor for Riemann sum of energy sold (W -> Wh)
+- platform: integration
+  source: sensor.energy_sell
+  name: energy_sell_sum
+  unit_prefix: k
+  round: 1
+  method: left

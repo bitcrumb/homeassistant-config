@@ -1,0 +1,50 @@
+---
+# Customize some of the sensor entities in Home Assistant
+#
+# https://www.home-assistant.io/docs/configuration/customizing-devices/
+#
+sensor.pv_iday:
+  icon: mdi:currency-usd
+sensor.pv_itotal:
+  icon: mdi:currency-usd
+sensor.pv_soc:
+  icon: mdi:battery
+sensor.pv_eday:
+  icon: mdi:lightning-bolt
+sensor.pv_etotal:
+  icon: mdi:lightning-bolt
+sensor.pv_etotal_last_month:
+  icon: mdi:lightning-bolt
+sensor.pv_etotal_this_month:
+  icon: mdi:lightning-bolt
+sensor.pv_temperature:
+  icon: mdi:thermometer
+sensor.excess:
+  icon: mdi:power-plug-off-outline
+sensor.pv_power_output:
+  icon: mdi:power-plug
+sensor.pv_turnon_time:
+  icon: mdi:clock-outline
+sensor.recycleapp_glas:
+  icon: mdi:glass-cocktail
+  friendly_name: Glas
+sensor.recycleapp_papier:
+  icon: mdi:package-variant
+  friendly_name: Papier & karton
+sensor.recycleapp_pmd:
+  icon: mdi:bottle-soda-classic
+  friendly_name: PMD
+sensor.recycleapp_restafval:
+  icon: mdi:food
+  friendly_name: Huisvuil
+sensor.public_ip_address:
+  icon: mdi:ip
+  friendly_name: Public IPv4
+sensor.uptime:
+  icon: mdi:update
+sensor.kitchen_temperature:
+  friendly_name: Kitchen temperature
+sensor.home_work:
+  icon: mdi:highway
+sensor.home_school:
+  icon: mdi:highway

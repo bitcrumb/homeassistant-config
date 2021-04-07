@@ -1,0 +1,25 @@
+# You can whitelist files/folders with !, these will not be ignored.
+!*.yaml
+!.gitignore
+!*.md
+
+# Ignore file patterns
+*.db
+*.log
+*.yaml.bk
+known_devices.yaml
+
+# Ignore folders.
+.storage
+.cloud
+.google.token
+.vscode
+image
+www/tmp
+zigbee2mqtt
+
+# Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
+secrets.yaml
+
+# HA-specific
+.ps4-games.*.json

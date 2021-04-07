@@ -1,0 +1,11 @@
+---
+all_adults:
+  name: All adults
+  entities:
+    - person.ellen_ophalvens
+    - person.lode_vanhove
+all_kids:
+  name: All children
+  entities:
+    - person.otis_vanhove
+    - person.juna_vanhove

@@ -1,0 +1,8 @@
+---
+# The uptime sensor stores the timestamp (date and time) when Home Assistant
+# was last started.
+#
+# https://www.home-assistant.io/integrations/uptime/
+#
+- platform: uptime
+  name: Uptime

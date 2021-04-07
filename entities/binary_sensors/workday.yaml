@@ -1,0 +1,24 @@
+---
+# This is the workday sensor. This binary sensor tells me if it is
+# a workday today. It takes into account holidays as well!
+#
+# This is pretty useful for a lot of automations.
+#
+# https://www.home-assistant.io/integrations/workday/
+#
+- platform: workday
+  name: Workday
+  country: BE
+  workdays:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
+- platform: workday
+  name: Weekend
+  country: BE
+  workdays:
+    - sat
+    - sun
+  excludes: []

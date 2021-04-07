@@ -1,0 +1,37 @@
+---
+# The tod platform supports binary sensors which get their values by checking if
+# the current time is within defined time ranges.
+#
+# https://www.home-assistant.io/integrations/tod/
+
+# Day parts
+- platform: tod
+  name: Morning
+  after: "07:00"
+  before: "12:00"
+- platform: tod
+  name: 'Noon'
+  after: "12:00"
+  before: "18:00"
+- platform: tod
+  name: "Evening"
+  after: "18:00"
+  before: "22:00"
+- platform: tod
+  name: 'Night'
+  after: "22:00"
+  before: "07:00"
+
+# Workday parts
+- platform: tod
+  name: "Office Hours (Morning)"
+  after: "08:00"
+  before: "12:00"
+- platform: tod
+  name: "Lunch Break"
+  after: "12:00"
+  before: "13:00"
+- platform: tod
+  name: "Office Hours (Afternoon)"
+  after: "13:00"
+  before: "17:00"

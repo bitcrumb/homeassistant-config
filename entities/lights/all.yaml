@@ -1,0 +1,13 @@
+---
+# General light groups
+#
+# https://www.home-assistant.io/integrations/light.group/
+#
+- platform: group
+  name: All lights
+  entities:
+    - light.tv_spots
+    - light.fridge_lights
+    - light.tv_led_strip
+    - light.office_wall_lights
+    - light.office_ceiling_lights
