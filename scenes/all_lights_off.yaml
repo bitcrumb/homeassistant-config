@@ -1,0 +1,11 @@
+- id: '1616836047419'
+  name: All lights off
+  entities:
+    light.all_lights:
+      min_mireds: 153
+      max_mireds: 370
+      friendly_name: All lights
+      icon: mdi:lightbulb-group
+      supported_features: 19
+      state: 'off'
+  icon: mdi:power

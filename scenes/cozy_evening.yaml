@@ -1,0 +1,15 @@
+- id: '1616934212663'
+  name: Cozy Evening
+  entities:
+    media_player.living_room:
+      volume_level: 0.16
+      is_volume_muted: false
+      media_content_id: x-sonos-spotify:spotify%3atrack%3a4SKLUEuuVz456xe7QZkEQo?sid=9&flags=8224&sn=4
+      media_content_type: music
+      shuffle: false
+      repeat: 'off'
+      sonos_group:
+      - media_player.living_room
+      queue_position: 0
+      state: playing
+  icon: mdi:candle

@@ -1,0 +1,40 @@
+- id: '1616835830496'
+  name: TV evening
+  entities:
+    light.tv_led_strip:
+      min_mireds: 153
+      max_mireds: 370
+      brightness: 255
+      color_temp: 83
+      hs_color:
+      - 240
+      - 100
+      rgb_color:
+      - 0
+      - 0
+      - 255
+      xy_color:
+      - 0.136
+      - 0.04
+      entity_id:
+      - light.tv_led_strips
+      state: 'on'
+    light.tv_spots:
+      min_mireds: 153
+      max_mireds: 370
+      brightness: 255
+      color_temp: 320
+      hs_color:
+      - 240
+      - 100
+      rgb_color:
+      - 0
+      - 0
+      - 255
+      xy_color:
+      - 0.136
+      - 0.04
+      entity_id:
+      - light.tv_spots
+      state: 'on'
+  icon: mdi:television-play

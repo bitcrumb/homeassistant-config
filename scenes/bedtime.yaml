@@ -1,0 +1,10 @@
+- id: "1617827752224"
+  name: Bedtime
+  entities:
+    media_player.samsung_tv:
+      state: "off"
+    light.all_lights:
+      state: "off"
+    media_player.living_room:
+      state: paused
+  icon: mdi:bed
