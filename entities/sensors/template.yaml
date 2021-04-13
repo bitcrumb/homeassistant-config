@@ -88,7 +88,7 @@
       icon_template: mdi:home-minus-outline
       unit_of_measurement: people
       value_template: >
-        {{ states['person'] | selectattr('state', 'eq', 'not_home') | list | count }}
+        {{ states['person'] | rejectattr('state', 'eq', 'unknown') | rejectattr('state', 'eq', 'home') | list | count }}
 
 # Goodwe
 - platform: template
