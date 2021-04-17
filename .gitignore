@@ -16,10 +16,11 @@ known_devices.yaml
 .vscode
 image
 www/tmp
-zigbee2mqtt
 
 # Ensure these YAML files are ignored, otherwise your secret data/credentials will leak.
 secrets.yaml
 
-# HA-specific
+# Add-on specific
 .ps4-games.*.json
+airsonos.xml
+zigbee2mqtt
