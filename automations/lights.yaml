@@ -5,8 +5,8 @@
   trigger:
   - platform: state
     entity_id: binary_sensor.no_one_home
-    from: 'Off'
-    to: 'On'
+    from: 'off'
+    to: 'on'
   condition: []
   action:
   - service: notify.mobile_app_iphone_12_pro_max_lode
@@ -36,7 +36,6 @@
             critical: 1
             volume: 1
   mode: single
-
 - id: '1616704973166'
   alias: Turn on the evening lights when the sun is set
   description: ''
@@ -49,7 +48,7 @@
     conditions:
     - condition: state
       entity_id: binary_sensor.no_one_home
-      state: 'On'
+      state: 'on'
   action:
   - scene: scene.tv_avond
   mode: single
