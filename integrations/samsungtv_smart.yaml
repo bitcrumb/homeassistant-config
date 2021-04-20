@@ -1,0 +1,3 @@
+samsungtv_smart:
+  - host: !secret ip_samsung_tv
+    mac: !secret mac_samsung_tv
