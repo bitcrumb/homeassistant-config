@@ -1,0 +1,8 @@
+---
+# The opensky sensor allows one to track overhead flights in a given region.
+#
+# https://www.home-assistant.io/integrations/opensky/
+#
+- platform: opensky
+  name: OpenSky  # Optional
+  radius: 5 # Radius of region to monitor (uses default HA location)

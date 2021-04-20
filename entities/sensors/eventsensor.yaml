@@ -1,0 +1,9 @@
+---
+# Custom integration to create sensors that track, represent and store specific Home Assistant events.
+#
+# https://github.com/azogue/eventsensor
+#
+- platform: eventsensor
+  name: OpenSkyFlights
+  event: opensky_entry
+  state: callsign

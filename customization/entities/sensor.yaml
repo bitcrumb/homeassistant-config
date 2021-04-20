@@ -48,3 +48,5 @@ sensor.home_work:
   icon: mdi:highway
 sensor.home_school:
   icon: mdi:highway
+sensor.openskyflights:
+  icon: mdi:airplane
