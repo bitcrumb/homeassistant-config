@@ -358,7 +358,7 @@ customElements.whenDefined("home-assistant-main").then(() => {
 										//borderDash: [2, 2],
 										label: {
 											enabled: true,
-											content: 'zwaar',
+											content: 'Zwaar',
 											position: 'right',
 											fontSize: 10,
 											xPadding: 3,
@@ -375,7 +375,7 @@ customElements.whenDefined("home-assistant-main").then(() => {
 										//borderDash: [2, 2],
 										label: {
 											enabled: true,
-											content: 'matig',
+											content: 'Matig',
 											position: 'right',
 											fontSize: 10,
 											xPadding: 3,
@@ -691,7 +691,7 @@ customElements.whenDefined("home-assistant-main").then(() => {
 		});
 
 		console.info(
-			`%c NEERSLAG-CARD %c 2021.04.08.1`,
+			`%c NEERSLAG-CARD %c 2021.04.12.0`,
 			"Color: white; font-weight: bold; background: red;",
 			""
 		);
