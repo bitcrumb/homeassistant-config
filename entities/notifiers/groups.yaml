@@ -13,3 +13,13 @@
   name: "Ellen Devices"
   services:
     - service: mobile_app_huawei_ellen
+
+- platform: group
+  name: "Otis Devices"
+  services:
+    - service: mobile_app_ipad_otis
+
+- platform: group
+  name: "Juna Devices"
+  services:
+    - service: mobile_app_ipad_juna
