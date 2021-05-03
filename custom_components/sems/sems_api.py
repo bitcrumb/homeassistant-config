@@ -3,18 +3,21 @@ import logging
 
 import requests
 
+from homeassistant import exceptions
+
 _LOGGER = logging.getLogger(__name__)
 
-_LoginURL = "https://eu.semsportal.com/api/v2/Common/CrossLogin"
+# _LoginURL = "https://eu.semsportal.com/api/v2/Common/CrossLogin"
+_LoginURL = "https://www.semsportal.com/api/v2/Common/CrossLogin"
 _PowerStationURL = (
-    "https://eu.semsportal.com/api/v2/PowerStation/GetMonitorDetailByPowerstationId"
+    "https://www.semsportal.com/api/v2/PowerStation/GetMonitorDetailByPowerstationId"
 )
 _RequestTimeout = 30  # seconds
 
 _DefaultHeaders = {
     "Content-Type": "application/json",
     "Accept": "application/json",
-    "token": '{"version":"","client":"web","language":"en"}',
+    "token": '{"version":"","client":"ios","language":"en"}',
 }
 
 
@@ -46,6 +49,7 @@ class SemsApi:
             # Prepare Login Data to retrieve Authentication Token
             # Dict won't work here somehow, so this magic string creation must do.
             login_data = '{"account":"' + userName + '","pwd":"' + password + '"}'
+            # login_data = {"account": userName, "pwd": password}
 
             # Make POST request to retrieve Authentication Token from SEMS API
             login_response = requests.post(
@@ -71,11 +75,16 @@ class SemsApi:
             _LOGGER.error("Unable to fetch login token from SEMS API. %s", exception)
             return None
 
-    def getData(self, powerStationId, renewToken=False):
+    def getData(self, powerStationId, renewToken=False, maxTokenRetries=2):
         """Get the latest data from the SEMS API and updates the state."""
         try:
             # Get the status of our SEMS Power Station
             _LOGGER.debug("SEMS - Making Power Station Status API Call")
+            if maxTokenRetries <= 0:
+                _LOGGER.info(
+                    "SEMS - Maximum token fetch tries reached, aborting for now"
+                )
+                raise OutOfRetries
             if self._token is None or renewToken:
                 _LOGGER.debug(
                     "API token not set (%s) or new token requested (%s), fetching",
@@ -102,12 +111,19 @@ class SemsApi:
             # try again and renew token is unsuccessful
             if jsonResponse["msg"] != "success" or jsonResponse["data"] is None:
                 _LOGGER.debug(
-                    "Query not successful (%s), retrying with new token",
+                    "Query not successful (%s), retrying with new token, %s retries remaining",
                     jsonResponse["msg"],
+                    maxTokenRetries,
                 )
-                return self.getData(powerStationId, True)
+                return self.getData(
+                    powerStationId, True, maxTokenRetries=maxTokenRetries - 1
+                )
 
             # return list of all inverters
             return jsonResponse["data"]["inverter"]
         except Exception as exception:
             _LOGGER.error("Unable to fetch data from SEMS. %s", exception)
+
+
+class OutOfRetries(exceptions.HomeAssistantError):
+    """Error to indicate too many error attempts."""

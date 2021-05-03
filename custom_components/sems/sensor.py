@@ -14,9 +14,9 @@ from homeassistant.helpers.update_coordinator import (
     DataUpdateCoordinator,
     UpdateFailed,
 )
-from homeassistant.const import DEVICE_CLASS_POWER, POWER_WATT
+from homeassistant.const import DEVICE_CLASS_POWER, POWER_WATT, CONF_SCAN_INTERVAL
 from homeassistant.helpers.entity import Entity
-from .const import DOMAIN, CONF_STATION_ID
+from .const import DOMAIN, CONF_STATION_ID, DEFAULT_SCAN_INTERVAL
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -24,9 +24,13 @@ _LOGGER = logging.getLogger(__name__)
 async def async_setup_entry(hass, config_entry, async_add_entities):
     """Add sensors for passed config_entry in HA."""
     # _LOGGER.debug("hass.data[DOMAIN] %s", hass.data[DOMAIN])
-    # _LOGGER.debug("config_entry %s", config_entry.data)
     semsApi = hass.data[DOMAIN][config_entry.entry_id]
     stationId = config_entry.data[CONF_STATION_ID]
+
+    # _LOGGER.debug("config_entry %s", config_entry.data)
+    update_interval = timedelta(
+        seconds=config_entry.data.get(CONF_SCAN_INTERVAL, DEFAULT_SCAN_INTERVAL)
+    )
 
     async def async_update_data():
         """Fetch data from API endpoint.
@@ -42,6 +46,11 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
             # found = []
             # _LOGGER.debug("Found inverters: %s", inverters)
             data = {}
+            if inverters is None:
+                # something went wrong, probably token could not be fetched
+                raise UpdateFailed(
+                    "Error communicating with API, probably token could not be fetched, see debug logs"
+                )
             for inverter in inverters:
                 name = inverter["invert_full"]["name"]
                 # powerstation_id = inverter["invert_full"]["powerstation_id"]
@@ -62,7 +71,7 @@ async def async_setup_entry(hass, config_entry, async_add_entities):
         name="SEMS API",
         update_method=async_update_data,
         # Polling interval. Will only be polled if there are subscribers.
-        update_interval=timedelta(seconds=60),
+        update_interval=update_interval,
     )
 
     #
@@ -124,24 +133,27 @@ class SemsSensor(CoordinatorEntity, Entity):
         # _LOGGER.debug(
         #     "state, self data: %s", self.coordinator.data[self.sn]
         # )
-        return (
-            self.coordinator.data[self.sn]["pac"]
-            if self.coordinator.data[self.sn]["status"] == 1
-            else 0
-        )
+        data = self.coordinator.data[self.sn]
+        return data["pac"] if data["status"] == 1 else 0
+
+    def statusText(self, status) -> str:
+        labels = {-1: "Offline", 0: "Waiting", 1: "Normal", 2: "Fault"}
+        return labels[status] if status in labels else "Unknown"
 
     # For backwards compatibility
     @property
-    def device_state_attributes(self):
+    def extra_state_attributes(self):
         """Return the state attributes of the monitored installation."""
         data = self.coordinator.data[self.sn]
         # _LOGGER.debug("state, self data: %s", data.items())
-        return {k: v for k, v in data.items() if k is not None and v is not None}
+        attributes = {k: v for k, v in data.items() if k is not None and v is not None}
+        attributes["statusText"] = self.statusText(data["status"])
+        return attributes
 
     @property
-    def is_on(self):
+    def is_on(self) -> bool:
         """Return entity status."""
-        self.coordinator.data[self.sn]["status"]
+        self.coordinator.data[self.sn]["status"] == 1
 
     @property
     def should_poll(self):
