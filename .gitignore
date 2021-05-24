@@ -24,3 +24,7 @@ secrets.yaml
 .ps4-games.*.json
 airsonos.xml
 zigbee2mqtt
+
+# Temporary Home Assistant files
+home-assistant_v2.db-shm
+home-assistant_v2.db-wal
