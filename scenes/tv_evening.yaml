@@ -5,7 +5,6 @@
       min_mireds: 153
       max_mireds: 370
       brightness: 255
-      color_temp: 83
       hs_color:
       - 240
       - 100
@@ -23,7 +22,6 @@
       min_mireds: 153
       max_mireds: 370
       brightness: 255
-      color_temp: 320
       hs_color:
       - 240
       - 100

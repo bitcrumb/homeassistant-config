@@ -1,0 +1,44 @@
+- id: '123456583108'
+  name: Youtube
+  entities:
+    media_player.samsung_tv:
+      volume_level: 0.11
+      is_volume_muted: false
+      media_content_type: app
+      media_title: Youtube
+      app_id: 9Ur5IzDKqV.TizenYouTube
+      source: YouTube
+      state: 'on'
+    light.tv_led_strip:
+      min_mireds: 153
+      max_mireds: 370
+      brightness: 1
+      color_temp: 83
+      hs_color:
+      - 360
+      - 100
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      xy_color:
+      - 0.701
+      - 0.299
+      state: 'on'
+    light.tv_spots:
+      min_mireds: 153
+      max_mireds: 370
+      brightness: 1
+      color_temp: 320
+      hs_color:
+      - 360
+      - 100
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      xy_color:
+      - 0.701
+      - 0.299
+      state: 'on'
+  icon: mdi:youtube
