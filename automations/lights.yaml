@@ -1,6 +1,6 @@
 ---
 - id: '1617480044723'
-  alias: Turn off the lights when nobody home
+  alias: 💡 Turn off the lights when nobody home
   description: ''
   trigger:
   - platform: state
@@ -16,7 +16,7 @@
   - scene: scene.all_lights_off
   mode: single
 - id: '1617562334938'
-  alias: Warn on low fuel level (< 20%)
+  alias: ⛽️ Warn on low fuel level (< 20%)
   description: ''
   trigger:
   - platform: numeric_state
@@ -37,7 +37,7 @@
             volume: 1
   mode: single
 - id: '1616704973166'
-  alias: Turn on the evening lights when the sun is set
+  alias: 💡 Turn on the evening lights when the sun is set
   description: ''
   trigger:
   - platform: sun
@@ -54,7 +54,7 @@
   mode: single
 
 - id: '1617000158066'
-  alias: 'Turn off the lights an hour after sunrise '
+  alias: 💡 Turn off the lights an hour after sunrise
   description: ''
   trigger:
   - platform: sun

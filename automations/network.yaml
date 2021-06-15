@@ -1,6 +1,6 @@
 ---
 - id: '1616785361376'
-  alias: Notify when external IP-address changes
+  alias: 🔄 Notify when external IP-address changes
   description: ''
   trigger:
   - platform: state

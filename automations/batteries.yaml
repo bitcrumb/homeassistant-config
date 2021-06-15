@@ -1,6 +1,6 @@
 ---
 - id: '1616786307664'
-  alias: The battery of Otis' iPad is very low (< 20%)
+  alias: 🔋 The battery of Otis' iPad is very low (< 20%)
   description: ''
   trigger:
   - type: battery_level
@@ -24,7 +24,7 @@
   mode: single
 
 - id: '1616786351023'
-  alias: The battery of Juna's iPad is very low (< 20%)
+  alias: 🔋 The battery of Juna's iPad is very low (< 20%)
   description: ''
   trigger:
   - type: battery_level

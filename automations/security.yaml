@@ -1,6 +1,6 @@
 ---
 - id: '1617823541653'
-  alias: Send a camera snapshot when motion is detected
+  alias: 📸 Send a camera snapshot when motion is detected
   description: ''
   trigger:
   - platform: state
