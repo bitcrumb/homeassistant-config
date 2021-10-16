@@ -17,9 +17,9 @@
 - platform: group
   name: "Otis Devices"
   services:
-    - service: mobile_app_ipad_otis
+    - service: mobile_app_ipad_air_otis
 
 - platform: group
   name: "Juna Devices"
   services:
-    - service: mobile_app_ipad_juna
+    - service: mobile_app_ipad_air_juna

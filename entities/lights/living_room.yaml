@@ -6,10 +6,10 @@
 - platform: group
   name: TV Spots
   entities:
-    - light.54802417d8f15b94e71a
-    - light.68426301c44f33cdba74
-    - light.548024172462ab336a5c
+    - light.led_tv_links
+    - light.led_tv_midden
+    - light.led_tv_rechts
 - platform: group
   name: TV LED Strip
   entities:
-    - light.bf5b0a8c54f26a1ad0n0lg
+    - light.led_strip_tv

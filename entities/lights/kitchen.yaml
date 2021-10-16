@@ -6,5 +6,5 @@
 - platform: group
   name: Fridge Lights
   entities:
-    - light.01242673c82b96c9495d
-    - light.01242673c82b96c965c0
+    - light.led_frigo_links
+    - light.led_frigo_rechts

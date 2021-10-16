@@ -11,3 +11,4 @@
     - light.tv_led_strip
     - light.office_wall_lights
     - light.office_ceiling_lights
+    - light.office_mood_light

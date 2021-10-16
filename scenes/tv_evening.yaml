@@ -16,7 +16,7 @@
       - 0.136
       - 0.04
       entity_id:
-      - light.tv_led_strips
+      - light.tv_led_strip
       state: 'on'
     light.tv_spots:
       min_mireds: 153
