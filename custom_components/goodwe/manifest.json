@@ -6,9 +6,11 @@
   "dependencies": [],
   "codeowners": [
     "@mletenay",
+    "@starkillerOG",
     "@fizcris"
   ],
-  "requirements": ["goodwe==0.2.4"],
+  "requirements": ["goodwe==0.2.6"],
+  "config_flow": true,
   "iot_class": "local_polling",
   "version": "1.0.0"
 }
