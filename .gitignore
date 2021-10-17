@@ -6,8 +6,12 @@
 # Ignore file patterns
 *.db
 *.log
+*.log.*
 *.yaml.bk
+*.db-shm
+*.db-wal
 known_devices.yaml
+H9DWL0~1
 
 # Ignore folders.
 .storage
@@ -24,7 +28,6 @@ secrets.yaml
 .ps4-games.*.json
 airsonos.xml
 zigbee2mqtt
-
-# Temporary Home Assistant files
-home-assistant_v2.db-shm
-home-assistant_v2.db-wal
+rtsp2webrtc_v4_aarch64
+google_service_account.json
+aircast.xml
