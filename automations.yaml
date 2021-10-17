@@ -1,2 +1,79 @@
----
-[]
+- id: '1621927850930'
+  alias: 📹 Turn on "privacy mode" of camera when people at home
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.no_one_home
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: tapo_control.set_privacy_mode
+    target:
+      device_id: 9847c11824589f0ef5d3cfcb1751e824
+    data:
+      privacy_mode: 'on'
+  mode: single
+- id: '1621928552564'
+  alias: 📹 Turn off "privacy mode" of camera when no people at home
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.no_one_home
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: tapo_control.set_privacy_mode
+    target:
+      device_id: 9847c11824589f0ef5d3cfcb1751e824
+    data:
+      privacy_mode: 'off'
+  mode: single
+- alias: ♻️ Send garbage reminder
+  trigger:
+  - platform: state
+    entity_id:
+    - sensor.recycleapp_morgen
+  condition: '{{ states.sensor.recycleapp_morgen.state != ''None'' }}'
+  action:
+  - delay:
+      hours: 18
+  - service: notify.lode_devices
+    data:
+      title: Afvalophaling
+      message: '♻️ Morgen: {{ states.sensor.recycleapp_morgen.state }}'
+  id: 0c363e5fa5164f67b91bafc26f04de05
+- id: '1632921047367'
+  alias: Close awning when rain detected
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.buienalarm_precipitation_forecast_average
+    above: '0.1'
+  condition: []
+  action:
+  - service: cover.close_cover
+    target:
+      entity_id: cover.awning
+  - service: cover.open_cover
+    target:
+      entity_id: cover.screen
+  mode: single
+- id: '1632928778074'
+  alias: When nobody at home close awning
+  description: ''
+  trigger:
+  - platform: state
+    entity_id: binary_sensor.no_one_home
+    from: 'false'
+    to: 'true'
+  condition: []
+  action:
+  - service: cover.close_cover
+    target:
+      entity_id: cover.awning
+  - service: cover.open_cover
+    target:
+      entity_id: cover.screen
+  mode: single

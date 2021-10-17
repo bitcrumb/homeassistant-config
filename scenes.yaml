@@ -1,2 +1,17 @@
----
-[]
+- id: '1634314424982'
+  name: Zonnewering inklappen
+  entities:
+    cover.awning:
+      current_position: 0
+      friendly_name: Awning
+      icon: mdi:storefront-outline
+      supported_features: 527
+      device_class: awning
+      state: closed
+    cover.screen:
+      current_position: 100
+      friendly_name: Screen
+      icon: hass:blinds
+      supported_features: 527
+      device_class: blind
+      state: open

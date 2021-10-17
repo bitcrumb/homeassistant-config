@@ -2,9 +2,9 @@
   name: Bedtime
   entities:
     media_player.samsung_tv:
-      state: "off"
+      state: off
     light.all_lights:
-      state: "off"
+      state: off
     media_player.living_room:
       state: paused
   icon: mdi:bed
