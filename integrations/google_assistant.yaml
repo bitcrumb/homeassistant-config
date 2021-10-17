@@ -1,0 +1,43 @@
+---
+# The google_assistant integration allows you to control things via Google Assistant on your mobile, tablet or Google Home device.
+# 
+# See: https://www.home-assistant.io/integrations/google_assistant/
+#
+google_assistant:
+  project_id: smart-home-22e99
+  service_account: !include ../google_service_account.json
+  report_state: true
+  expose_by_default: false
+  # exposed_domains:
+  #   - switch
+  #   - light
+  #   - sensor
+  #   - script
+  #   - scene
+  #   - group
+  #   - input_boolean
+  #   - media_player
+  #   - fan
+  #   - lock
+  #   - device_tracker
+  #   - climate
+  #   - remote
+  #   - automation
+  #   - camera
+  entity_config:
+    light.tv_spots:
+      name: "TV Spots"
+    light.tv_led_strip:
+      name: "TV LED Strip"
+    light.fridge_lights:
+      name: "Frigo"
+    light.office_ceiling_lights:
+      name: "Bureau plafond"
+    light.office_wall_lights:
+      name: "Bureau muur"
+    light.office_mood_light:
+      name: "Bureau sfeer"
+    cover.awning:
+      name: "Luifel"
+    cover.screen:
+      name: "Screen"
