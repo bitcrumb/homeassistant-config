@@ -113,3 +113,16 @@
         {% else %}
           {{ 0 }}
         {% endif %}
+
+# Buienalarm
+- platform: template
+  sensors:
+    next_rain_forecast_in_minutes:
+      friendly_name: "Buienalarm Next Rain Forecast (min)"
+      unit_of_measurement: 'min'
+      value_template: >-
+        {% if as_timestamp(states('sensor.buienalarm_next_rain_forecast')) %}
+          {{ ( ( as_timestamp(states('sensor.buienalarm_next_rain_forecast')) - as_timestamp(now()) ) / 60 ) | round }}
+        {% else %}
+          {{ states('nonexistent') }}
+        {% endif %}
