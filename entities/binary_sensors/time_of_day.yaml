@@ -7,31 +7,39 @@
 # Day parts
 - platform: tod
   name: Morning
-  after: "07:00"
+  after: "06:30"
   before: "12:00"
 - platform: tod
-  name: 'Noon'
+  name: Noon
   after: "12:00"
   before: "18:00"
 - platform: tod
-  name: "Evening"
+  name: Evening
   after: "18:00"
   before: "22:00"
 - platform: tod
-  name: 'Night'
+  name: Sleep
   after: "22:00"
   before: "07:00"
+- platform: tod
+  name: Day
+  after: sunrise
+  before: sunset
+- platform: tod
+  name: Night
+  after: sunset
+  before: sunrise
 
 # Workday parts
 - platform: tod
-  name: "Office Hours (Morning)"
+  name: Office Hours (Morning)
   after: "08:00"
   before: "12:00"
 - platform: tod
-  name: "Lunch Break"
+  name: Lunch Break
   after: "12:00"
   before: "13:00"
 - platform: tod
-  name: "Office Hours (Afternoon)"
+  name: Office Hours (Afternoon)
   after: "13:00"
   before: "17:00"
