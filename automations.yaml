@@ -45,7 +45,7 @@
       message: '♻️ Morgen: {{ states.sensor.recycleapp_morgen.state }}'
   id: 0c363e5fa5164f67b91bafc26f04de05
 - id: '1632921047367'
-  alias: Close awning when rain detected
+  alias: 🌧 Close awning and screen when rain detected
   description: ''
   trigger:
   - platform: numeric_state
@@ -61,19 +61,16 @@
       entity_id: cover.screen
   mode: single
 - id: '1632928778074'
-  alias: When nobody at home close awning
+  alias: ↗️ When nobody at home close awning
   description: ''
   trigger:
   - platform: state
     entity_id: binary_sensor.no_one_home
-    from: 'false'
-    to: 'true'
+    from: 'off'
+    to: 'on'
   condition: []
   action:
   - service: cover.close_cover
     target:
       entity_id: cover.awning
-  - service: cover.open_cover
-    target:
-      entity_id: cover.screen
   mode: single

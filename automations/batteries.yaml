@@ -3,11 +3,8 @@
   alias: 🔋 The battery of Otis' iPad is very low (< 20%)
   description: ''
   trigger:
-  - type: battery_level
-    platform: device
-    device_id: 00abdcbd4bd808dbd9f96794ceff6b3f
+  - platform: numeric_state
     entity_id: sensor.ipad_air_otis_battery_level
-    domain: sensor
     below: 20
   condition: []
   action:
@@ -27,11 +24,8 @@
   alias: 🔋 The battery of Juna's iPad is very low (< 20%)
   description: ''
   trigger:
-  - type: battery_level
-    platform: device
-    device_id: c2581b62ba631ae3a85e0f61b9695868
+  - platform: numeric_state
     entity_id: sensor.ipad_air_juna_battery_level
-    domain: sensor
     below: 20
   condition: []
   action:

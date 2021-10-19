@@ -4,7 +4,7 @@
   description: ''
   trigger:
   - platform: time
-    at: '21:00:00'
+    at: input_datetime.solar_panel_report_time
   condition: []
   action:
   - service: notify.lode_devices
