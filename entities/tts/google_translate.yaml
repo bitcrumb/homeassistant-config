@@ -21,4 +21,5 @@
 
   # We have to explicitly set the base_url using an IP-address
   # since DNS otherwise can't resolve the hostname.
-  base_url: !secret homeassistant_internal_url_ip
+
+  base_url: !secret homeassistant_external_url
