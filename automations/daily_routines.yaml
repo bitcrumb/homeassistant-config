@@ -1,0 +1,25 @@
+---
+- id: inform_kids_about_bedtime
+  alias: 😴 Inform kids about bedtime
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.bedtime_report_time
+  condition: []
+  action:
+  - service: script.announce_message
+    data:
+      message: Tijd om te gaan slapen!
+  mode: single
+- id: inform_kids_about_homework
+  alias: 📚 Inform kids about homework
+  description: ''
+  trigger:
+  - platform: time
+    at: input_datetime.homework_report_time
+  condition: []
+  action:
+  - service: script.announce_message
+    data:
+      message: Tijd om huiswerk te maken!
+  mode: single

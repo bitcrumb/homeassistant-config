@@ -1,0 +1,21 @@
+alias: Cast a message to all Google Cast speakers
+sequence:
+  - service: media_player.volume_set
+    target:
+      entity_id: media_player.alle_speakers
+    data:
+      volume_level: 0.8
+  - service: tts.google_translate_say
+    entity_id: media_player.alle_speakers
+    data:
+      message: '{{ message }}'
+      language: nl
+  - delay:
+      seconds: 5
+  - service: media_player.volume_set
+    target:
+      entity_id: media_player.alle_speakers
+    data:
+      volume_level: 0.5
+mode: single
+icon: mdi:account-voice
