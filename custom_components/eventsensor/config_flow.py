@@ -2,7 +2,6 @@
 import logging
 
 import voluptuous as vol
-
 from homeassistant import config_entries
 from homeassistant.const import CONF_EVENT, CONF_EVENT_DATA, CONF_NAME, CONF_STATE
 from homeassistant.core import callback
@@ -11,6 +10,9 @@ from homeassistant.helpers.event import EVENT_STATE_CHANGED
 from .common import (
     CONF_STATE_MAP,
     DOMAIN,
+    make_string_ui_from_dict,
+    make_unique_id,
+    parse_dict_from_ui_string,
     PRESET_AQARA_CUBE,
     PRESET_AQARA_CUBE_MAPPING,
     PRESET_AQARA_SMART_BUTTON,
@@ -18,14 +20,15 @@ from .common import (
     PRESET_FOH,
     PRESET_FOH_MAPPING,
     PRESET_HUE_BUTTON,
-    PRESET_HUE_BUTTON_MAPPING,
+    PRESET_HUE_BUTTON_MAPPING_V1,
+    PRESET_HUE_BUTTON_MAPPING_V2,
+    PRESET_HUE_BUTTON_V2,
     PRESET_HUE_DIMMER,
-    PRESET_HUE_DIMMER_MAPPING,
+    PRESET_HUE_DIMMER_MAPPING_V1,
+    PRESET_HUE_DIMMER_MAPPING_V2,
+    PRESET_HUE_DIMMER_V2,
     PRESET_HUE_TAP,
     PRESET_HUE_TAP_MAPPING,
-    make_string_ui_from_dict,
-    make_unique_id,
-    parse_dict_from_ui_string,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -39,7 +42,7 @@ _EVENT_SOURCE_HUE = "Hue"
 _EVENT_SOURCE_DECONZ = "deCONZ"
 _EVENT_SOURCE_GENERIC = "Any other"
 _IDENTIFIER_ID = "id"
-_IDENTIFIER_UNIQUE_ID = "uniqueid"
+_IDENTIFIER_UNIQUE_ID = "unique_id"
 _PRESET_GENERIC = "Custom state mapping"
 
 STEP_1_INITIAL = vol.Schema(
@@ -56,10 +59,12 @@ STEP_2_PRECONFIGURED = vol.Schema(
             [_IDENTIFIER_ID, _IDENTIFIER_UNIQUE_ID]
         ),
         vol.Optional(CONF_IDENTIFIER, default=""): str,
-        vol.Required(CONF_PRESET_CONFIG, default=PRESET_HUE_DIMMER): vol.In(
+        vol.Required(CONF_PRESET_CONFIG, default=PRESET_HUE_DIMMER_V2): vol.In(
             [
+                PRESET_HUE_DIMMER_V2,
                 PRESET_HUE_DIMMER,
                 PRESET_HUE_TAP,
+                PRESET_HUE_BUTTON_V2,
                 PRESET_HUE_BUTTON,
                 PRESET_FOH,
                 PRESET_AQARA_SMART_BUTTON,
@@ -125,7 +130,7 @@ class EventSensorFlowHandler(config_entries.ConfigFlow):
             event_source = user_input.get(CONF_INTEGRATION)
             if event_source == _EVENT_SOURCE_HUE:
                 self._data_steps_config[CONF_EVENT] = "hue_event"
-                self._data_steps_config[CONF_STATE] = "event"
+                self._data_steps_config[CONF_STATE] = "type,subtype"
 
             elif event_source == _EVENT_SOURCE_DECONZ:
                 self._data_steps_config[CONF_EVENT] = "deconz_event"
@@ -143,19 +148,23 @@ class EventSensorFlowHandler(config_entries.ConfigFlow):
         if user_input is not None:
             type_id = user_input.get(CONF_TYPE_IDENTIFIER)
             identifier = user_input.get(CONF_IDENTIFIER)
-            filter_map = {}
-            if identifier:
-                filter_map = {type_id: identifier}
+            filter_map = {type_id: identifier} if identifier else {}
             self._data_steps_config[CONF_EVENT_DATA] = filter_map
 
             preset_map = {}
             preset_config = user_input.get(CONF_PRESET_CONFIG)
             if preset_config == PRESET_HUE_DIMMER:
-                preset_map = PRESET_HUE_DIMMER_MAPPING
+                preset_map = PRESET_HUE_DIMMER_MAPPING_V1
+                self._data_steps_config[CONF_STATE] = "event"
+            elif preset_config == PRESET_HUE_DIMMER_V2:
+                preset_map = PRESET_HUE_DIMMER_MAPPING_V2
             elif preset_config == PRESET_HUE_TAP:
                 preset_map = PRESET_HUE_TAP_MAPPING
             elif preset_config == PRESET_HUE_BUTTON:
-                preset_map = PRESET_HUE_BUTTON_MAPPING
+                preset_map = PRESET_HUE_BUTTON_MAPPING_V1
+                self._data_steps_config[CONF_STATE] = "event"
+            elif preset_config == PRESET_HUE_BUTTON_V2:
+                preset_map = PRESET_HUE_BUTTON_MAPPING_V2
             elif preset_config == PRESET_FOH:
                 preset_map = PRESET_FOH_MAPPING
             elif preset_config == PRESET_AQARA_SMART_BUTTON:
@@ -225,8 +234,8 @@ class EventSensorOptionsFlowHandler(config_entries.OptionsFlow):
         """Manage the options."""
         if user_input is not None:
             # Inverse conversion for mappings shown as strings
-            for c in (CONF_EVENT_DATA, CONF_STATE_MAP):
-                user_input[c] = parse_dict_from_ui_string(user_input[c])
+            for conf in (CONF_EVENT_DATA, CONF_STATE_MAP):
+                user_input[conf] = parse_dict_from_ui_string(user_input[conf])
 
             new_unique_id = make_unique_id(user_input)
             if self.config_entry.unique_id != new_unique_id:

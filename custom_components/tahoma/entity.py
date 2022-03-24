@@ -1,53 +1,29 @@
 """Parent class for every Overkiz device."""
 from __future__ import annotations
 
-from dataclasses import dataclass
-from typing import Any, Callable
+from enum import unique
+from typing import cast
 
-from homeassistant.components.binary_sensor import BinarySensorEntityDescription
-from homeassistant.components.sensor import SensorEntityDescription
-from homeassistant.const import ATTR_BATTERY_LEVEL
-from homeassistant.helpers.entity import DeviceInfo
+from pyoverkiz.enums import OverkizAttribute, OverkizState
+from pyoverkiz.models import Device
+
+from homeassistant.backports.enum import StrEnum
+from homeassistant.helpers.entity import DeviceInfo, EntityDescription
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
-from pyhoma.models import Device
 
 from .const import DOMAIN
 from .coordinator import OverkizDataUpdateCoordinator
 from .executor import OverkizExecutor
 
-CORE_AVAILABILITY_STATE = "core:AvailabilityState"
-CORE_BATTERY_STATE = "core:BatteryState"
-CORE_FIRMWARE_REVISION = "core:FirmwareRevision"
-CORE_MANUFACTURER = "core:Manufacturer"
-CORE_MANUFACTURER_NAME_STATE = "core:ManufacturerNameState"
-CORE_MODEL_STATE = "core:ModelState"
-CORE_PRODUCT_MODEL_NAME_STATE = "core:ProductModelNameState"
-CORE_SENSOR_DEFECT_STATE = "core:SensorDefectState"
-CORE_STATUS_STATE = "core:StatusState"
-
-IO_MODEL_STATE = "io:ModelState"
-
-STATE_AVAILABLE = "available"
-STATE_BATTERY_FULL = "full"
-STATE_BATTERY_NORMAL = "normal"
-STATE_BATTERY_LOW = "low"
-STATE_BATTERY_VERY_LOW = "verylow"
-STATE_DEAD = "dead"
-
-BATTERY_MAP = {
-    STATE_BATTERY_FULL: 100,
-    STATE_BATTERY_NORMAL: 75,
-    STATE_BATTERY_LOW: 25,
-    STATE_BATTERY_VERY_LOW: 10,
-}
-
 
 class OverkizEntity(CoordinatorEntity):
-    """Representation of a Overkiz device entity."""
+    """Representation of an Overkiz device entity."""
 
     coordinator: OverkizDataUpdateCoordinator
 
-    def __init__(self, device_url: str, coordinator: OverkizDataUpdateCoordinator):
+    def __init__(
+        self, device_url: str, coordinator: OverkizDataUpdateCoordinator
+    ) -> None:
         """Initialize the device."""
         super().__init__(coordinator)
         self.device_url = device_url
@@ -56,16 +32,17 @@ class OverkizEntity(CoordinatorEntity):
 
         self._attr_assumed_state = not self.device.states
         self._attr_available = self.device.available
+        self._attr_unique_id = self.device.device_url
         self._attr_name = self.device.label
-        self._attr_unique_id = self.device.deviceurl
+
+        self._attr_device_info = self.generate_device_info()
 
     @property
     def device(self) -> Device:
         """Return Overkiz device linked to this entity."""
         return self.coordinator.data[self.device_url]
 
-    @property
-    def device_info(self) -> dict[str, Any]:
+    def generate_device_info(self) -> DeviceInfo:
         """Return device registry information for this entity."""
         # Some devices, such as the Smart Thermostat have several devices in one physical device,
         # with same device url, terminated by '#' and a number.
@@ -77,57 +54,34 @@ class OverkizEntity(CoordinatorEntity):
             }
 
         manufacturer = (
-            self.executor.select_attribute(CORE_MANUFACTURER)
-            or self.executor.select_state(CORE_MANUFACTURER_NAME_STATE)
-            or "Somfy"
+            self.executor.select_attribute(OverkizAttribute.CORE_MANUFACTURER)
+            or self.executor.select_state(OverkizState.CORE_MANUFACTURER_NAME)
+            or self.coordinator.client.server.manufacturer
         )
 
         model = (
             self.executor.select_state(
-                CORE_MODEL_STATE, CORE_PRODUCT_MODEL_NAME_STATE, IO_MODEL_STATE
+                OverkizState.CORE_MODEL,
+                OverkizState.CORE_PRODUCT_MODEL_NAME,
+                OverkizState.IO_MODEL,
             )
-            or self.device.widget
+            or self.device.widget.value
         )
 
         return DeviceInfo(
             identifiers={(DOMAIN, self.executor.base_device_url)},
             name=self.device.label,
-            manufacturer=manufacturer,
-            model=model,
-            sw_version=self.executor.select_attribute(CORE_FIRMWARE_REVISION),
-            suggested_area=self.coordinator.areas[self.device.placeoid],
-            via_device=self.executor.get_gateway_id(),
+            manufacturer=str(manufacturer),
+            model=str(model),
+            sw_version=cast(
+                str,
+                self.executor.select_attribute(OverkizAttribute.CORE_FIRMWARE_REVISION),
+            ),
+            hw_version=self.device.controllable_name,
+            suggested_area=self.coordinator.areas[self.device.place_oid],
+            via_device=(DOMAIN, self.executor.get_gateway_id()),
+            configuration_url=self.coordinator.client.server.configuration_url,
         )
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes of the device."""
-        attr = {}
-
-        if self.executor.has_state(CORE_BATTERY_STATE):
-            battery_state = self.executor.select_state(CORE_BATTERY_STATE)
-            attr[ATTR_BATTERY_LEVEL] = BATTERY_MAP.get(battery_state, battery_state)
-
-        if self.executor.select_state(CORE_SENSOR_DEFECT_STATE) == STATE_DEAD:
-            attr[ATTR_BATTERY_LEVEL] = 0
-
-        return attr
-
-
-@dataclass
-class OverkizSensorDescription(SensorEntityDescription):
-    """Class to describe an Overkiz sensor."""
-
-    native_value: Callable[
-        [str | int | float], str | int | float
-    ] | None = lambda val: val
-
-
-@dataclass
-class OverkizBinarySensorDescription(BinarySensorEntityDescription):
-    """Class to describe an Overkiz binary sensor."""
-
-    is_on: Callable[[str], bool] = lambda state: state
 
 
 class OverkizDescriptiveEntity(OverkizEntity):
@@ -137,10 +91,26 @@ class OverkizDescriptiveEntity(OverkizEntity):
         self,
         device_url: str,
         coordinator: OverkizDataUpdateCoordinator,
-        description: OverkizSensorDescription | OverkizBinarySensorDescription,
-    ):
+        description: EntityDescription,
+    ) -> None:
         """Initialize the device."""
         super().__init__(device_url, coordinator)
         self.entity_description = description
-        self._attr_name = f"{super().name} {self.entity_description.name}"
         self._attr_unique_id = f"{super().unique_id}-{self.entity_description.key}"
+
+        if self.entity_description.name:
+            self._attr_name = f"{super().name} {self.entity_description.name}"
+
+
+# Used by state translations for sensor and select entities
+@unique
+class OverkizDeviceClass(StrEnum):
+    """Device class for Overkiz specific devices."""
+
+    BATTERY = "overkiz__battery"
+    DISCRETE_RSSI_LEVEL = "overkiz__discrete_rssi_level"
+    MEMORIZED_SIMPLE_VOLUME = "overkiz__memorized_simple_volume"
+    OPEN_CLOSED_PEDESTRIAN = "overkiz__open_closed_pedestrian"
+    PRIORITY_LOCK_ORIGINATOR = "overkiz__priority_lock_originator"
+    SENSOR_DEFECT = "overkiz__sensor_defect"
+    SENSOR_ROOM = "overkiz__sensor_room"

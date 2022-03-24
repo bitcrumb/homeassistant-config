@@ -1,9 +1,14 @@
+from __future__ import annotations
+
+import collections
 import logging
 import time
+import homeassistant
 
 from homeassistant.components import websocket_api
 from homeassistant.const import CONF_ENTITY_ID, CONF_OFFSET, CONF_REPEAT
 from homeassistant.core import callback
+import homeassistant.core as ha_core
 
 from .const import (
     CONF_ACCOUNTS,
@@ -18,6 +23,9 @@ from .const import (
     CONF_SPOTIFY_DEVICE_ID,
     CONF_SPOTIFY_URI,
     CONF_SPOTIFY_SEARCH,
+    CONF_SPOTIFY_CATEGORY,
+    CONF_SPOTIFY_COUNTRY,
+    CONF_SPOTIFY_LIMIT,
     CONF_START_VOL,
     DOMAIN,
     SCHEMA_PLAYLISTS,
@@ -41,7 +49,14 @@ CONFIG_SCHEMA = SPOTCAST_CONFIG_SCHEMA
 _LOGGER = logging.getLogger(__name__)
 
 
-def setup(hass, config):
+def setup(hass: ha_core.HomeAssistant, config: collections.OrderedDict) -> bool:
+
+    # get spotify core integration status
+    # if return false, could indicate a bad spotify integration. Race
+    # condition doesn't permit us to abort setup, see #258
+    if not helpers.get_spotify_install_status(hass):
+        _LOGGER.debug("Spotify integration was not found, please verify integration is functionnal. Could result in python error...")
+
     """Setup the Spotcast service."""
     conf = config[DOMAIN]
 
@@ -56,7 +71,7 @@ def setup(hass, config):
     hass.data[DOMAIN]["controller"] = spotcast_controller
 
     @callback
-    def websocket_handle_playlists(hass, connection, msg):
+    def websocket_handle_playlists(hass: ha_core.HomeAssistant, connection, msg):
         @async_wrap
         def get_playlist():
             """Handle to get playlist"""
@@ -75,7 +90,7 @@ def setup(hass, config):
         hass.async_add_job(get_playlist())
 
     @callback
-    def websocket_handle_devices(hass, connection, msg):
+    def websocket_handle_devices(hass: ha_core.HomeAssistant, connection, msg):
         @async_wrap
         def get_devices():
             """Handle to get devices. Only for default account"""
@@ -88,7 +103,7 @@ def setup(hass, config):
         hass.async_add_job(get_devices())
 
     @callback
-    def websocket_handle_player(hass, connection, msg):
+    def websocket_handle_player(hass: ha_core.HomeAssistant, connection, msg):
         @async_wrap
         def get_player():
             """Handle to get player"""
@@ -101,7 +116,7 @@ def setup(hass, config):
         hass.async_add_job(get_player())
 
     @callback
-    def websocket_handle_accounts(hass, connection, msg):
+    def websocket_handle_accounts(hass: ha_core.HomeAssistant, connection, msg):
         """Handle to get accounts"""
         _LOGGER.debug("websocket_handle_accounts msg: %s", msg)
         resp = list(accounts.keys()) if accounts is not None else []
@@ -109,7 +124,7 @@ def setup(hass, config):
         connection.send_message(websocket_api.result_message(msg["id"], resp))
 
     @callback
-    def websocket_handle_castdevices(hass, connection, msg):
+    def websocket_handle_castdevices(hass: ha_core.HomeAssistant, connection, msg):
         """Handle to get cast devices for debug purposes"""
         _LOGGER.debug("websocket_handle_castdevices msg: %s", msg)
 
@@ -117,18 +132,21 @@ def setup(hass, config):
         _LOGGER.debug("%s", known_devices)
         resp = [
             {
-                "uuid": cast_info.uuid,
-                "model_name": cast_info.model_name,
-                "friendly_name": cast_info.friendly_name,
+                "uuid": str(cast_info.cast_info.uuid),
+                "model_name": cast_info.cast_info.model_name,
+                "friendly_name": cast_info.cast_info.friendly_name,
             }
             for cast_info in known_devices
         ]
 
         connection.send_message(websocket_api.result_message(msg["id"], resp))
 
-    def start_casting(call):
+    def start_casting(call: ha_core.ServiceCall):
         """service called."""
         uri = call.data.get(CONF_SPOTIFY_URI)
+        category = call.data.get(CONF_SPOTIFY_CATEGORY)
+        country = call.data.get(CONF_SPOTIFY_COUNTRY)
+        limit = call.data.get(CONF_SPOTIFY_LIMIT)
         search = call.data.get(CONF_SPOTIFY_SEARCH)
         random_song = call.data.get(CONF_RANDOM, False)
         repeat = call.data.get(CONF_REPEAT, False)
@@ -142,7 +160,22 @@ def setup(hass, config):
         device_name = call.data.get(CONF_DEVICE_NAME)
         entity_id = call.data.get(CONF_ENTITY_ID)
 
+        # if no market information try to get global setting
+        if helpers.is_empty_str(country):
+            try:
+                country = config[DOMAIN][CONF_SPOTIFY_COUNTRY]
+            except KeyError:
+                country = None
+
         client = spotcast_controller.get_spotify_client(account)
+
+        # verify the uri provided and clean-up if required
+        if not helpers.is_empty_str(uri):
+            if not helpers.is_valid_uri(uri):
+                _LOGGER.error("Invalid URI provided, aborting casting")
+                return
+                
+            uri = uri.split("?")[0]
 
         # first, rely on spotify id given in config otherwise get one
         if not spotify_device_id:
@@ -150,7 +183,7 @@ def setup(hass, config):
                 account, spotify_device_id, device_name, entity_id
             )
 
-        if (uri is None or uri.strip() == "") and (search is None or search.strip() == ""):
+        if helpers.is_empty_str(uri) and helpers.is_empty_str(search) and helpers.is_empty_str(category):
             _LOGGER.debug("Transfering playback")
             current_playback = client.current_playback()
             if current_playback is not None:
@@ -160,11 +193,26 @@ def setup(hass, config):
             client.transfer_playback(
                 device_id=spotify_device_id, force_play=force_playback
             )
+        elif category:
+            uri = helpers.get_random_playlist_from_category(client, category, country, limit)
+
+            if uri is None:
+                _LOGGER.error("No playlist returned. Stop service call")
+                return None
+
+            spotcast_controller.play(
+                client,
+                spotify_device_id,
+                uri,
+                random_song,
+                position,
+                ignore_fully_played,
+            )
         else:
 
-            if uri is None or uri.strip() == "":
+            if helpers.is_empty_str(uri):
                 # get uri from search request
-                uri = helpers.get_search_results(search, client)
+                uri = helpers.get_search_results(search, client, country)
 
             spotcast_controller.play(
                 client,
