@@ -1,0 +1,57 @@
+sonos_say:
+  alias: Sonos text-to-speech script
+  sequence:
+  - service: sonos.snapshot
+    target:
+      entity_id: '{{ sonos_entity }}'
+  - service: sonos.unjoin
+    target:
+      entity_id: '{{ sonos_entity }}'
+  - service: media_player.volume_set
+    data:
+      entity_id: '{{ sonos_entity }}'
+      volume_level: '{{ volume }}'
+  - service: tts.google_translate_say
+    data:
+      entity_id: '{{ sonos_entity }}'
+      message: '{{ message }}'
+  - delay: '{{ delay }}'
+  - service: sonos.restore
+    target:
+      entity_id: '{{ sonos_entity }}'
+  mode: single
+spotify_start:
+  alias: Start Spotify playback on selected device
+  sequence:
+  - service: spotcast.start
+    data:
+      entity_id: "{% set selected_device = states('input_select.chromecast_audio').lower()\
+        \ %} {{ 'media_player.' + selected_device }}     \n"
+      force_playback: true
+  mode: single
+  icon: mdi:spotify
+cast_message:
+  alias: Cast a message to all speakers
+  sequence:
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.8
+    target:
+      entity_id: media_player.alle_speakers
+  - service: tts.google_translate_say
+    entity_id: media_player.alle_speakers
+    data:
+      message: '{{ message }}'
+      language: nl
+  - delay:
+      hours: 0
+      minutes: 0
+      seconds: 10
+      milliseconds: 0
+  - service: media_player.volume_set
+    data:
+      volume_level: 0.5
+    target:
+      entity_id: media_player.alle_speakers
+  mode: single
+  icon: mdi:account-voice

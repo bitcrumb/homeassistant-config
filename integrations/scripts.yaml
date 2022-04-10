@@ -1,0 +1,10 @@
+---
+# The script integration allows users to specify a sequence of actions to be
+# executed by Home Assistant.
+#
+# https://www.home-assistant.io/integrations/script
+#
+
+# This include is for the scene editor/UI
+script: !include ../scripts.yaml
+script split: !include_dir_named ../scripts

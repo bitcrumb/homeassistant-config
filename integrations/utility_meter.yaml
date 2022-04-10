@@ -23,3 +23,21 @@ utility_meter:
   house_consumption_monthly:
     source: sensor.house_consumption_sum
     cycle: monthly
+  smart_plug_fridge_consumption_yearly:
+    source: sensor.smart_plug_kitchen_energy
+    cycle: yearly
+  smart_plug_fridge_consumption_monthly:
+    source: sensor.smart_plug_kitchen_energy
+    cycle: monthly
+  smart_plug_fridge_consumption_daily:
+    source: sensor.smart_plug_kitchen_energy
+    cycle: daily
+  smart_plug_office_consumption_yearly:
+    source: sensor.smart_plug_office_energy
+    cycle: yearly
+  smart_plug_office_consumption_monthly:
+    source: sensor.smart_plug_office_energy
+    cycle: monthly
+  smart_plug_office_consumption_daily:
+    source: sensor.smart_plug_office_energy
+    cycle: daily
