@@ -40,8 +40,11 @@ def areCameraPortsOpened(host):
 
 
 async def isRtspStreamWorking(hass, host, username, password, full_url=""):
+    LOGGER.debug("[isRtspStreamWorking][%s] Testing RTSP stream.", host)
     _ffmpeg = hass.data[DATA_FFMPEG]
+    LOGGER.debug("[isRtspStreamWorking][%s] Creating image frame.", host)
     ffmpeg = ImageFrame(_ffmpeg.binary)
+    LOGGER.debug("[isRtspStreamWorking][%s] Encoding username and password.", host)
     username = urllib.parse.quote_plus(username)
     password = urllib.parse.quote_plus(password)
 
@@ -51,8 +54,18 @@ async def isRtspStreamWorking(hass, host, username, password, full_url=""):
         if username != "" and password != "":
             streaming_url = f"rtsp://{username}:{password}@{host}:554/stream1"
 
+    LOGGER.debug(
+        "[isRtspStreamWorking][%s] Getting image from %s.",
+        host,
+        streaming_url.replace(username, "HIDDEN_USERNAME").replace(
+            password, "HIDDEN_PASSWORD"
+        ),
+    )
     image = await asyncio.shield(
         ffmpeg.get_image(streaming_url, output_format=IMAGE_JPEG,)
+    )
+    LOGGER.debug(
+        "[isRtspStreamWorking][%s] Image data received.", host,
     )
     return not image == b""
 
@@ -148,6 +161,15 @@ async def getCamData(hass, controller):
     else:
         camData["presets"] = {}
 
+    try:
+        firmwareUpdateStatus = await hass.async_add_executor_job(
+            controller.getFirmwareUpdateStatus
+        )
+        firmwareUpdateStatus = firmwareUpdateStatus["cloud_config"]
+    except Exception:
+        firmwareUpdateStatus = None
+    camData["firmwareUpdateStatus"] = firmwareUpdateStatus
+
     return camData
 
 
@@ -192,6 +214,28 @@ async def update_listener(hass, entry):
         ]
         if motionSensor:
             await setupOnvif(hass, entry)
+
+
+async def getLatestFirmwareVersion(hass, entry, controller):
+    hass.data[DOMAIN][entry.entry_id][
+        "lastFirmwareCheck"
+    ] = datetime.datetime.utcnow().timestamp()
+    try:
+        updateInfo = await hass.async_add_executor_job(controller.isUpdateAvailable)
+        if (
+            "version"
+            in updateInfo["result"]["responses"][1]["result"]["cloud_config"][
+                "upgrade_info"
+            ]
+        ):
+            updateInfo = updateInfo["result"]["responses"][1]["result"]["cloud_config"][
+                "upgrade_info"
+            ]
+        else:
+            updateInfo = False
+    except Exception:
+        updateInfo = False
+    return updateInfo
 
 
 async def syncTime(hass, entry):
