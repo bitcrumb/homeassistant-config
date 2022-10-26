@@ -2,419 +2,559 @@
   alias: "\U0001F4F9 Turn on \"privacy mode\" of camera when people at home"
   description: ''
   trigger:
-    - platform: state
-      entity_id: binary_sensor.no_one_home
-      from: 'on'
-      to: 'off'
+  - platform: state
+    entity_id: binary_sensor.no_one_home
+    from: 'on'
+    to: 'off'
   condition: []
   action:
-    - service: tapo_control.set_privacy_mode
-      target:
-        device_id: 9847c11824589f0ef5d3cfcb1751e824
-      data:
-        privacy_mode: 'on'
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.tapo_camera_privacy
   mode: single
 - id: '1621928552564'
   alias: "\U0001F4F9 Turn off \"privacy mode\" of camera when no people at home"
   description: ''
   trigger:
-    - platform: state
-      entity_id: binary_sensor.no_one_home
-      from: 'off'
-      to: 'on'
+  - platform: state
+    entity_id: binary_sensor.no_one_home
+    from: 'off'
+    to: 'on'
   condition: []
   action:
-    - service: tapo_control.set_privacy_mode
-      target:
-        device_id: 9847c11824589f0ef5d3cfcb1751e824
-      data:
-        privacy_mode: 'off'
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.tapo_camera_privacy
   mode: single
 - id: 0c363e5fa5164f67b91bafc26f04de05
   alias: ♻️ Send garbage reminder
   trigger:
-    - platform: state
-      entity_id:
-        - sensor.recycleapp_morgen
+  - platform: state
+    entity_id:
+    - sensor.recycleapp_morgen
   condition:
-    - condition: template
-      value_template: "{{ states.sensor.recycleapp_tomorrow.state != 'None' }}"
+  - condition: template
+    value_template: '{{ states.sensor.recycleapp_tomorrow.state != ''None'' }}'
   action:
-    - service: notify.lode_devices
-      data:
-        title: ♻️ Afvalophaling
-        message:
-          'Morgen worden volgende zaken opgehaald: {{ states.sensor.recycleapp_morgen.state
-          }}'
+  - service: notify.lode_devices
+    data:
+      title: ♻️ Afvalophaling
+      message: 'Morgen worden volgende zaken opgehaald: {{ states.sensor.recycleapp_morgen.state
+        }}'
   mode: single
 - id: '1632921047367'
-  alias: "\U0001F327 Close awning and screen when rain predicted"
+  alias: "⛱ \U0001F327 Close awning and screen when rain predicted"
   description: ''
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.buienalarm_precipitation_forecast_average
-      above: '0.1'
-  condition: []
+  - platform: numeric_state
+    entity_id: sensor.buienalarm_precipitation_forecast_average
+    above: '0.1'
+  condition:
+  - condition: or
+    conditions:
+    - condition: numeric_state
+      entity_id: cover.screen
+      attribute: current_position
+      below: 100
+    - condition: state
+      entity_id: cover.awning
+      state: open
   action:
-    - service: cover.close_cover
-      target:
-        entity_id: cover.awning
-      data: {}
-    - service: cover.open_cover
-      data: {}
-      target:
-        entity_id: cover.screen
-    - service: notify.lode_devices
-      data:
-        title: "\U0001F327 Luifel en screen gesloten door regen"
-        message:
-          De luifel en screen werde automatisch gesloten omdat er regen werd
-          voorspeld in de komende 15 minuten.
+  - service: cover.close_cover
+    target:
+      entity_id: cover.awning
+    data: {}
+  - service: cover.open_cover
+    data: {}
+    target:
+      entity_id: cover.screen
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F327 Luifel en screen gesloten door regen"
+      message: De luifel en screen werden automatisch gesloten omdat er regen werd
+        voorspeld in de komende 15 minuten.
   mode: single
 - id: '1632928778074'
-  alias: ↗️ When nobody at home close awning
+  alias: "⛱ \U0001F699 When nobody at home close awning"
   description: ''
   trigger:
-    - platform: state
-      entity_id: binary_sensor.no_one_home
-      from: 'off'
-      to: 'on'
-  condition: []
+  - platform: state
+    entity_id: binary_sensor.no_one_home
+    from: 'off'
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: cover.awning
+    state: open
   action:
-    - service: cover.close_cover
-      target:
-        entity_id: cover.awning
+  - service: cover.close_cover
+    target:
+      entity_id: cover.awning
+    data: {}
   mode: single
 - id: '1636128250859'
   alias: "\U0001F634 Inform kids about bedtime"
   description: ''
   trigger:
-    - platform: time
-      at: input_datetime.bedtime_report_time
+  - platform: time
+    at: input_datetime.bedtime_report_time
   condition:
-    - condition: state
-      entity_id: binary_sensor.no_one_home
-      state: 'off'
-    - condition: time
-      weekday:
-        - mon
-        - tue
-        - wed
-        - thu
-        - sun
+  - condition: state
+    entity_id: binary_sensor.no_one_home
+    state: 'off'
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - sun
   action:
-    - service: script.announce_message
-      data:
-        message:
-          Het is tijd om te gaan slapen! Naar boven, pyjama aan en tanden poetsen!
-          Hup hup.
+  - service: script.announce_message
+    data:
+      message: Het is tijd om te gaan slapen! Naar boven, pyjama aan en tanden poetsen!
+        Hup hup.
   mode: single
 - id: '1636129149096'
   alias: "\U0001F4DA Inform kids about homework"
   description: ''
   trigger:
-    - platform: time
-      at: input_datetime.homework_report_time
+  - platform: time
+    at: input_datetime.homework_report_time
   condition:
-    - condition: state
-      entity_id: binary_sensor.no_one_home
-      state: 'off'
-    - condition: time
-      weekday:
-        - mon
-        - tue
-        - thu
+  - condition: state
+    entity_id: binary_sensor.no_one_home
+    state: 'off'
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - thu
   action:
-    - service: script.cast_message
-      data:
-        message: Tijd om huiswerk te maken!
+  - service: script.cast_message
+    data:
+      message: Tijd om huiswerk te maken!
   mode: single
 - id: '1636131173499'
   alias: "\U0001F4F5 Device offline notification"
   trigger:
-    - platform: state
-      entity_id:
-        - light.led_frigo_links
-        - light.led_frigo_rechts
-        - light.led_tv_links
-        - light.led_tv_midden
-        - light.led_tv_rechts
-        - light.led_bureau_links
-        - light.led_bureau_midden
-        - light.led_bureau_rechts
-        - light.led_bureaukast_links
-        - light.led_bureaukast_rechts
-        - light.led_sfeerlicht_bureau
-      to: unavailable
-      for:
-        minutes: 5
+  - platform: state
+    entity_id:
+    - light.led_frigo_links
+    - light.led_frigo_rechts
+    - light.led_tv_links
+    - light.led_tv_midden
+    - light.led_tv_rechts
+    - light.led_bureau_links
+    - light.led_bureau_midden
+    - light.led_bureau_rechts
+    - light.led_bureaukast_links
+    - light.led_bureaukast_rechts
+    - light.led_sfeerlicht_bureau
+    to: unavailable
+    for:
+      minutes: 5
   action:
-    - service: notify.lode_devices
+  - service: notify.lode_devices
+    data:
+      title: Device offline detected!
+      message: "\U0001F4F5 The device {{ state_attr(trigger.to_state.entity_id, 'friendly_name')
+        }} is offline!"
       data:
-        title: Device offline detected!
-        message:
-          "\U0001F4F5 The device {{ state_attr(trigger.to_state.entity_id, 'friendly_name')
-          }} is offline!"
-        data:
-          priority: high
-          ttl: 0
-          color: red
+        priority: high
+        ttl: 0
+        color: red
   mode: parallel
 - id: '1637251279206'
   alias: "\U0001F6AA Instruct kids to leave for school"
   description: ''
   trigger:
-    - platform: time
-      at: input_datetime.leave_for_school_report_time
+  - platform: time
+    at: input_datetime.leave_for_school_report_time
   condition:
-    - condition: state
-      entity_id: binary_sensor.no_one_home
-      state: 'off'
-    - condition: time
-      weekday:
-        - mon
-        - tue
-        - wed
-        - thu
-        - fri
+  - condition: state
+    entity_id: binary_sensor.no_one_home
+    state: 'off'
+  - condition: time
+    weekday:
+    - mon
+    - tue
+    - wed
+    - thu
+    - fri
   action:
-    - service: script.cast_message
-      data:
-        message: Tijd om je klaar te maken voor school!
+  - service: script.cast_message
+    data:
+      message: Tijd om je klaar te maken voor school!
   mode: single
 - id: '1638859694197'
   alias: "\U0001F976 Fridge plug turned off notification"
   description: ''
   trigger:
-    - platform: state
-      to: 'off'
-      for:
-        hours: 0
-        minutes: 0
-        seconds: 0
-        milliseconds: 0
-      entity_id: switch.smart_plug_fridge
+  - platform: state
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
+    entity_id: switch.smart_plug_fridge
   condition: []
   action:
-    - service: notify.lode_devices
+  - service: notify.lode_devices
+    data:
+      title: Device offline detected!
+      message: "\U0001F976 The fridge plug was turned off!"
       data:
-        title: Device offline detected!
-        message: "\U0001F976 The fridge plug was turned off!"
-        data:
-          priority: high
-          ttl: 0
-          color: red
+        priority: high
+        ttl: 0
+        color: red
   mode: parallel
   max: 10
 - id: '1638957877743'
   alias: "\U0001F4F9 Turn off \"privacy mode\" at night"
   description: ''
   trigger:
-    - platform: state
-      entity_id: binary_sensor.night
-      from: 'off'
-      to: 'on'
+  - platform: state
+    entity_id: binary_sensor.night
+    from: 'off'
+    to: 'on'
   condition: []
   action:
-    - service: tapo_control.set_privacy_mode
-      target:
-        device_id: 9847c11824589f0ef5d3cfcb1751e824
-      data:
-        privacy_mode: 'off'
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.tapo_camera_privacy
   mode: single
 - id: '1638957990044'
   alias: "\U0001F4F9 Turn on \"privacy mode\" at day"
   description: ''
   trigger:
-    - platform: state
-      entity_id: binary_sensor.day
-      from: 'off'
-      to: 'on'
+  - platform: state
+    entity_id: binary_sensor.day
+    from: 'off'
+    to: 'on'
   condition: []
   action:
-    - service: tapo_control.set_privacy_mode
-      target:
-        device_id: 9847c11824589f0ef5d3cfcb1751e824
-      data:
-        privacy_mode: 'on'
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.tapo_camera_privacy
   mode: single
 - id: '1639753919191'
   alias: Fix - Reload Tuya Integration
   description: ''
   trigger:
-    - platform: time_pattern
-      minutes: '01'
-      seconds: '01'
+  - platform: time_pattern
+    minutes: '01'
+    seconds: '01'
   condition: []
   action:
-    - service: homeassistant.reload_config_entry
-      target:
-        device_id: 6819358ab1f648037f06de44e0ef8491
+  - service: homeassistant.reload_config_entry
+    target:
+      device_id: 6819358ab1f648037f06de44e0ef8491
   mode: single
 - id: '1650973895443'
   alias: "\U0001F699 Ellen leaves from work"
   description: ''
   trigger:
-    - platform: zone
-      entity_id: person.ellen_ophalvens
-      zone: zone.okra
-      event: leave
+  - platform: zone
+    entity_id: person.ellen_ophalvens
+    zone: zone.okra
+    event: leave
   condition: []
   action:
-    - service: notify.lode_devices
-      data:
-        message:
-          Ellen vertrok zonet van haar werk. Over {{ states.sensor.okra_home.state
-          }} minuten is ze thuis.
-        title: "\U0001F699 Ellen op weg naar huis!"
+  - service: notify.lode_devices
+    data:
+      message: Ellen vertrok zonet van haar werk. Over {{ states.sensor.okra_home.state
+        }} minuten is ze thuis.
+      title: "\U0001F699 Ellen op weg naar huis!"
   mode: single
 - id: '1657788008411'
-  alias: "\U0001F32C Close awning when a lot of wind predicted"
+  alias: "⛱ \U0001F32C Close awning when a lot of wind predicted"
   description: ''
   trigger:
-    - platform: numeric_state
-      entity_id: weather.home
-      above: '20'
-      attribute: wind_speed
-  condition: []
+  - platform: numeric_state
+    entity_id: weather.home
+    above: '20'
+    attribute: wind_speed
+  condition:
+  - condition: state
+    entity_id: cover.awning
+    state: open
   action:
-    - service: cover.close_cover
-      target:
-        entity_id: cover.awning
-      data: {}
-    - service: notify.lode_devices
-      data:
-        message: De luifel werd gesloten omdat er hardere wind wordt voorspeld.
-        title: "\U0001F32C Luifel gesloten door wind"
+  - service: cover.close_cover
+    target:
+      entity_id: cover.awning
+    data: {}
+  - service: notify.lode_devices
+    data:
+      message: De luifel werd gesloten omdat er hardere wind wordt voorspeld.
+      title: "\U0001F32C Luifel gesloten door wind"
   mode: single
 - id: '1657790977221'
-  alias: ⛱ Open awning when luminance exceeds 30000 and not windy and before 16h00
+  alias: ⛱ ☀️ Open awning when luminance exceeds 30000 and not windy and before 16h00
   description: ''
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.outdoor_luminance
-      above: '30000'
-    - platform: time
-      at: 08:15:00
+  - platform: numeric_state
+    entity_id: sensor.outdoor_luminance
+    above: '30000'
+  - platform: time
+    at: 08:15:00
   condition:
-    - condition: numeric_state
-      entity_id: weather.home
-      below: '20'
-      attribute: wind_speed
-    - condition: state
-      state: closed
-      entity_id: cover.awning
-    - condition: time
-      before: '16:00:00'
+  - condition: numeric_state
+    entity_id: weather.home
+    below: '20'
+    attribute: wind_speed
+  - condition: state
+    state: closed
+    entity_id: cover.awning
+  - condition: time
+    before: '16:00:00'
   action:
-    - service: cover.set_cover_position
-      data:
-        position: 60
-      target:
-        entity_id: cover.awning
-    - service: notify.lode_devices
-      data:
-        message:
-          Luifel wordt automatisch geopend omdat helderheid te hoog is (en geen
-          harde wind).
-        title: ⛱ Luifel wordt geopend
+  - service: cover.set_cover_position
+    data:
+      position: 60
+    target:
+      entity_id: cover.awning
+  - service: notify.lode_devices
+    data:
+      message: Luifel wordt automatisch geopend omdat helderheid te hoog is (en geen
+        harde wind).
+      title: ⛱ Luifel wordt geopend
   mode: single
 - id: '1657791504056'
-  alias: ⛱ Close screen when luminance exceeds 40000
+  alias: ⛱ ☀️ Close screen when luminance exceeds 40000
   description: ''
   trigger:
-    - platform: numeric_state
-      entity_id: sensor.outdoor_luminance
-      above: 40000
+  - platform: numeric_state
+    entity_id: sensor.outdoor_luminance
+    above: 40000
   condition:
-    - condition: numeric_state
-      entity_id: cover.screen
-      attribute: current_position
-      above: '0'
+  - condition: state
+    entity_id: cover.screen
+    state: open
   action:
-    - service: cover.close_cover
-      data: {}
-      target:
-        entity_id: cover.screen
-    - service: notify.lode_devices
-      data:
-        message: Screen wordt automatisch gesloten omdat helderheid te hoog is.
-        title: ⛱ Screen wordt gesloten
+  - service: cover.close_cover
+    data: {}
+    target:
+      entity_id: cover.screen
+  - service: notify.lode_devices
+    data:
+      message: Screen wordt automatisch gesloten omdat helderheid te hoog is.
+      title: ⛱ Screen wordt gesloten
   mode: single
 - id: '1657791651788'
-  alias: ⛱ Open screen at 21h00
+  alias: ⛱ ⏱ Open screen at 21h00
   description: ''
   trigger:
-    - platform: time
-      at: '21:00:00'
+  - platform: time
+    at: '21:00:00'
   condition:
-    - condition: numeric_state
-      entity_id: cover.screen
-      attribute: current_position
-      below: '100'
+  - condition: numeric_state
+    entity_id: cover.screen
+    attribute: current_position
+    below: '100'
   action:
-    - service: cover.open_cover
-      data: {}
-      target:
-        entity_id: cover.screen
-    - service: notify.lode_devices
-      data:
-        title: ⛱ Screen openen (avond)
-        message: Screen wordt automatisch geopend omdat het avond is.
+  - service: cover.open_cover
+    data: {}
+    target:
+      entity_id: cover.screen
+  - service: notify.lode_devices
+    data:
+      title: ⛱ Screen openen (avond)
+      message: Screen wordt automatisch geopend omdat het avond is.
   mode: single
 - id: '1657793011369'
-  alias: ⛱ Close awning at 16h00
+  alias: ⛱ ⏱ Close awning at 16h00
   description: ''
   trigger:
-    - platform: time
-      at: '16:00:00'
-  condition: []
+  - platform: time
+    at: '16:00:00'
+  condition:
+  - condition: state
+    entity_id: cover.awning
+    state: open
   action:
-    - service: cover.close_cover
-      data: {}
-      target:
-        entity_id: cover.awning
-    - service: notify.lode_devices
-      data:
-        title: ⛱ Luifel gesloten (schaduw)
-        message: Luifel wordt wordt automatisch gesloten omdat er genoeg schaduw is.
+  - service: cover.close_cover
+    data: {}
+    target:
+      entity_id: cover.awning
+  - service: notify.lode_devices
+    data:
+      title: ⛱ Luifel gesloten (schaduw)
+      message: Luifel wordt wordt automatisch gesloten omdat er genoeg schaduw is.
   mode: single
 - id: '1663489026378'
   alias: "\U0001F50C\U0001F534 Switch off office devices at night"
   description: ''
   trigger:
-    - platform: time
-      at: 00:00:00
+  - platform: time
+    at: 00:00:00
   condition: []
   action:
-    - service: switch.turn_off
-      data: {}
-      target:
-        entity_id: switch.smart_plug_office
+  - service: switch.turn_off
+    data: {}
+    target:
+      entity_id: switch.smart_plug_office
   mode: single
 - id: '1663489310156'
   alias: "\U0001F50C\U0001F7E2 Switch on office devices in the morning"
   description: ''
   trigger:
-    - platform: time
-      at: 06:00:00
+  - platform: time
+    at: 06:00:00
   condition: []
   action:
-    - service: switch.turn_on
-      data: {}
-      target:
-        entity_id: switch.smart_plug_office
+  - service: switch.turn_on
+    data: {}
+    target:
+      entity_id: switch.smart_plug_office
   mode: single
 - id: '1663504824526'
   alias: ☀️⚡️⬆️ Upload solar panel production to EnergyID
   description: ''
   trigger:
-    - platform: time_pattern
-      hours: '*'
-      minutes: '0'
-      seconds: '0'
+  - platform: time_pattern
+    hours: '*'
+    minutes: '0'
+    seconds: '0'
   condition: []
   action:
-    - service: rest_command.energyid
-      data: {}
+  - service: rest_command.energyid
+    data: {}
   mode: single
+- id: '1663759730449'
+  alias: Dishwasher started
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.smart_plug_dishwasher_power
+    above: 5
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F37D Dishwasher started"
+      message: The dishwasher has started cleaning.
+  mode: single
+- id: '1663759782665'
+  alias: Dishwasher finished
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.smart_plug_dishwasher_power
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F37D Dishwasher finished"
+      message: "The dishwasher has finished its cleaning cycle \U0001FAE7."
+  mode: single
+- id: '1663760240422'
+  alias: Washing machine started
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.smart_plug_washer_power
+    above: 5
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F9FA Washing machine started"
+      message: The washing machines has started its cycle.
+  mode: single
+- id: '1663760300053'
+  alias: Washing machine finished
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.smart_plug_washer_power
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F9FA \U0001FAE7 Washing machine finished"
+      message: The washing machines has finished its cycle.
+  mode: single
+- id: '1663760496579'
+  alias: Dryer started
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.smart_plug_dryer_power
+    above: 5
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F9FA Dryer started"
+      message: The dryer has started its cycle.
+  mode: single
+- id: '1663760560002'
+  alias: Dryer finished
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.smart_plug_dryer_power
+    below: 5
+    for:
+      hours: 0
+      minutes: 5
+      seconds: 0
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: "\U0001F9FA \U0001FAE7 Dryer finished"
+      message: The dryer has finished its cycle ✨.
+  mode: single
+- id: '1666771838886'
+  alias: "\U0001F30D Warn when internet connection offline"
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.internet
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      message: "\U0001F30D The internet connection is offline!"
+      data:
+        priority: high
+        ttl: 0
+        color: red
+      title: Internet connection offline!
+  mode: parallel
+- id: '1666771910607'
+  alias: "\U0001F30D Inform when internet connection has been restored"
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.internet
+    from: 'off'
+    to: 'on'
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: Internet connectivity has been restored.
+      message: "\U0001F30D The internet connection is online again!"
+  mode: parallel

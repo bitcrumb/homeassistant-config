@@ -5,11 +5,46 @@
 # See: https://www.home-assistant.io/integrations/template/
 #
 
-# Electricity
 template:
+
   - sensor:
+# Electricity
       - name: 'Electricity Meter'
-        state: "{{ states('input_number.electricity_meter') | int }}"
         unit_of_measurement: 'kWh'
         device_class: energy
         state_class: measurement
+        state: "{{ states('input_number.electricity_meter') | int }}"
+
+# Total energy usage
+      - name: 'Total Home Energy'
+        unique_id: total_home_energy
+        unit_of_measurement: "kWh"
+        device_class: energy
+        state_class: total
+        state: >-
+          {{(
+            states('sensor.smart_plug_dishwasher_energy') | float +
+            states('sensor.smart_plug_dryer_energy') | float +
+            states('sensor.smart_plug_freezer_energy') | float +
+            states('sensor.smart_plug_fridge_energy') | float +
+            states('sensor.smart_plug_office_energy') | float +
+            states('sensor.smart_plug_washer_energy') | float
+            ) | round(3)
+          }}
+
+# Total power usage
+      - name: 'Total Home Power'
+        unique_id: total_home_power
+        unit_of_measurement: "W"
+        device_class: power
+        state_class: total
+        state: >-
+          {{(
+            state_attr('sensor.smart_plug_dishwasher_energy', 'power') | float +
+            state_attr('sensor.smart_plug_dryer_energy', 'power') | float +
+            state_attr('sensor.smart_plug_freezer_energy', 'power') | float +
+            state_attr('sensor.smart_plug_fridge_energy', 'power') | float +
+            state_attr('sensor.smart_plug_office_energy', 'power') | float +
+            state_attr('sensor.smart_plug_washer_energy', 'power') | float
+            ) | round(3)
+          }}

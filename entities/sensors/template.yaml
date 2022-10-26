@@ -1,4 +1,7 @@
 ---
+# DEPRECATED
+# New template sensors should be added to`integrateions/template.yaml`
+#
 # The template platform supports sensors which get their values from other entities.
 #
 # https://www.home-assistant.io/integrations/template/
@@ -9,43 +12,43 @@
 - platform: template
   sensors:
     inverter_pv_power_output:
-      value_template: "{{ state_attr('sensor.inverter_none', 'outputpower') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'outputpower') }}"
       unit_of_measurement: 'W'
       friendly_name: 'PV Power output'
     inverter_pv_temperature:
-      value_template: "{{ state_attr('sensor.inverter_none', 'tempperature') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'tempperature') }}"
       unit_of_measurement: 'C'
       friendly_name: 'PV Temperature'
     inverter_pv_eday:
-      value_template: "{{ state_attr('sensor.inverter_none', 'eday') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'eday') }}"
       unit_of_measurement: 'kWh'
       friendly_name: 'PV energy day'
     inverter_pv_etotal:
-      value_template: "{{ state_attr('sensor.inverter_none', 'etotal') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'etotal') }}"
       unit_of_measurement: 'kWh'
       friendly_name: 'PV energy total'
     inverter_pv_iday:
-      value_template: "{{ state_attr('sensor.inverter_none', 'iday') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'iday') }}"
       unit_of_measurement: '€'
       friendly_name: 'PV income day'
     inverter_pv_itotal:
-      value_template: "{{ state_attr('sensor.inverter_none', 'itotal') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'itotal') }}"
       unit_of_measurement: '€'
       friendly_name: 'PV income total'
     inverter_pv_excess:
-      value_template: "{{ state_attr('sensor.inverter_none', 'pmeter') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'pmeter') }}"
       unit_of_measurement: 'W'
       friendly_name: 'PV spare'
     inverter_pv_soc:
-      value_template: "{{ state_attr('sensor.inverter_none', 'soc') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'soc') }}"
       unit_of_measurement: '%'
       friendly_name: 'PV Battery power'
     inverter_pv_etotal_last_month:
-      value_template: "{{ state_attr('sensor.inverter_none', 'lastmonthetotle') }}"
+      value_template: "{{ state_attr('sensor.inverter_solar', 'lastmonthetotle') }}"
       unit_of_measurement: 'kWh'
       friendly_name: 'PV energy last month'
     inverter_pv_etotal_this_month:
-      value_template: "{{ state_attr('sensor.inverter_none', 'thismonthetotle') }}"
+      value_template: "{{ state_attr('sensor.sensor.inverter_solar', 'thismonthetotle') }}"
       unit_of_measurement: 'kWh'
       friendly_name: 'PV energy this month'
 
@@ -91,28 +94,28 @@
         {{ states['person'] | rejectattr('state', 'eq', 'unknown') | rejectattr('state', 'eq', 'home') | list | count }}
 
 # Goodwe
-- platform: template
-  sensors:
-    # Template sensor for values of energy bought (active_power < 0)
-    energy_buy:
-      friendly_name: 'Energy Buy'
-      unit_of_measurement: 'W'
-      value_template: >-
-        {% if states('sensor.goodwe_active_power')|float < 0 %}
-          {{ states('sensor.goodwe_active_power')|float * -1 }}
-        {% else %}
-          {{ 0 }}
-        {% endif %}
-    # Template sensor for values of energy sold (active_power > 0)
-    energy_sell:
-      friendly_name: 'Energy Sell'
-      unit_of_measurement: 'W'
-      value_template: >-
-        {% if states('sensor.goodwe_active_power')|float > 0 %}
-          {{ states('sensor.goodwe_active_power')|float }}
-        {% else %}
-          {{ 0 }}
-        {% endif %}
+# - platform: template
+#   sensors:
+#     # Template sensor for values of energy bought (active_power < 0)
+#     energy_buy:
+#       friendly_name: 'Energy Buy'
+#       unit_of_measurement: 'W'
+#       value_template: >-
+#         {% if states('sensor.goodwe_active_power')|float < 0 %}
+#           {{ states('sensor.goodwe_active_power')|float * -1 }}
+#         {% else %}
+#           {{ 0 }}
+#         {% endif %}
+#     # Template sensor for values of energy sold (active_power > 0)
+#     energy_sell:
+#       friendly_name: 'Energy Sell'
+#       unit_of_measurement: 'W'
+#       value_template: >-
+#         {% if states('sensor.goodwe_active_power')|float > 0 %}
+#           {{ states('sensor.goodwe_active_power')|float }}
+#         {% else %}
+#           {{ 0 }}
+#         {% endif %}
 
 # Buienalarm
 - platform: template

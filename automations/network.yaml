@@ -7,7 +7,7 @@
     entity_id: sensor.public_ip_address
   condition: []
   action:
-  - service: notify.notify
+  - service: notify.lode_devices
     data:
       title: 🌐 IP-address change
       message: New external IP address is {{ states('sensor.public_ip_address') }}

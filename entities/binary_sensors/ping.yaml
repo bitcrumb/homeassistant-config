@@ -11,3 +11,7 @@
   host: !secret ip_playstation_5
   name: Playstation 5
   scan_interval: 30
+- platform: ping
+  name: Internet
+  host: 8.8.8.8
+  scan_interval: 5

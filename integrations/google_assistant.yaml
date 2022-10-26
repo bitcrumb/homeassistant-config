@@ -37,7 +37,7 @@ google_assistant:
       name: "Bureau muur"
     light.office_mood_light:
       name: "Bureau sfeerlicht"
-    cover.awning:
-      name: "Luifel"
-    cover.screen:
-      name: "Screen"
+    # cover.awning:
+    #   name: "Luifel"
+    # cover.screen:
+    #   name: "Screen"

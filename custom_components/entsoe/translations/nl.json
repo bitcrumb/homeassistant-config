@@ -1,0 +1,36 @@
+{
+  "config": {
+    "step": {
+      "user": {
+          "description": "Voeg je API key en het gebied toe",
+          "data": {
+            "api_key": "Je API Key",
+            "area": "Gebied*",
+            "additional_cost": "Prijs Aanpassing Template (Optioneel)"
+          }
+      }
+    },
+    "error": {
+      "invalid_template": "Template Ongeldig, Check https://github.com/JaccoR/hass-entso-e",
+      "missing_current_price": "'current_price' is niet in het template"
+
+  }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "Voeg je API key en het gebied toe",
+        "data": {
+          "api_key": "Je API Key",
+          "area": "Gebied*",
+          "modifyer": "Prijs Aanpassing Template (Optioneel)"
+        }
+      }
+    },
+    "error": {
+      "invalid_template": "Template Ongeldig, Check https://github.com/JaccoR/hass-entso-e",
+      "missing_current_price": "'current_price' is niet in het template"
+
+  }
+  }
+}

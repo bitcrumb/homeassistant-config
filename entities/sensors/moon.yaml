@@ -1,6 +1,0 @@
----
-# The moon integration tracks the phases of the moon.
-#
-# https://www.home-assistant.io/integrations/moon/
-#
-- platform: moon
