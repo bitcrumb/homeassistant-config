@@ -155,7 +155,7 @@ async def ws_connect(hass: HomeAssistantType, params):
         url = params.get('url')
 
     # also check if url valid, e.g. wrong chars in password
-    assert urlparse(url).scheme == 'rtsp', "Support only RTSP-stream"
+    assert urlparse(url).scheme in ('rtsp', 'rtsps'), "Support only RTSP-stream"
 
     server = hass.data[DOMAIN]
     assert server.available, "WebRTC server not available"
@@ -189,7 +189,8 @@ class WebSocketView(HomeAssistantView):
 
             params = link
 
-        elif not request.get(KEY_AUTHENTICATED, False):
+        # fix for https://github.com/AlexxIT/WebRTC/pull/320
+        elif not utils.validate_signed_request(request):
             # you shall not pass
             raise HTTPUnauthorized()
 

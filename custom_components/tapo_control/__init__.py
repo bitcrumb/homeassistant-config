@@ -1,4 +1,5 @@
 import datetime
+
 from homeassistant.components.ffmpeg import CONF_EXTRA_ARGUMENTS
 from homeassistant.const import (
     CONF_IP_ADDRESS,
@@ -10,7 +11,9 @@ from homeassistant.core import HomeAssistant
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.exceptions import ConfigEntryNotReady
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+
 from .const import (
+    CONF_RTSP_TRANSPORT,
     ENABLE_SOUND_DETECTION,
     CONF_CUSTOM_STREAM,
     LOGGER,
@@ -19,6 +22,7 @@ from .const import (
     CLOUD_PASSWORD,
     ENABLE_STREAM,
     ENABLE_TIME_SYNC,
+    RTSP_TRANS_PROTOCOLS,
     SOUND_DETECTION_DURATION,
     SOUND_DETECTION_PEAK,
     SOUND_DETECTION_RESET,
@@ -113,6 +117,15 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 
         config_entry.version = 8
 
+    if config_entry.version == 8:
+
+        new = {**config_entry.data}
+        new[CONF_RTSP_TRANSPORT] = RTSP_TRANS_PROTOCOLS[0]
+
+        config_entry.data = {**new}
+
+        config_entry.version = 9
+
     LOGGER.info("Migration to version %s successful", config_entry.version)
 
     return True
@@ -120,6 +133,10 @@ async def async_migrate_entry(hass, config_entry: ConfigEntry):
 
 async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     await hass.config_entries.async_forward_entry_unload(entry, "camera")
+    await hass.config_entries.async_forward_entry_unload(entry, "binary_sensor")
+    await hass.config_entries.async_forward_entry_unload(entry, "light")
+    await hass.config_entries.async_forward_entry_unload(entry, "update")
+
     if hass.data[DOMAIN][entry.entry_id]["events"]:
         await hass.data[DOMAIN][entry.entry_id]["events"].async_stop()
     return True
@@ -229,7 +246,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
                             and entity._enable_sound_detection
                         ):
                             await entity.startNoiseDetection()
-                if hass.data[DOMAIN][entry.entry_id]["updateEntity"]._enabled:
+                if ("updateEntity" in hass.data[DOMAIN][entry.entry_id]) and hass.data[
+                    DOMAIN
+                ][entry.entry_id]["updateEntity"]._enabled:
                     hass.data[DOMAIN][entry.entry_id]["updateEntity"].updateCam(camData)
                     hass.data[DOMAIN][entry.entry_id][
                         "updateEntity"
@@ -268,6 +287,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
             if enableTimeSync:
                 await syncTime(hass, entry)
 
+        hass.async_create_task(
+            hass.config_entries.async_forward_entry_setup(entry, "light")
+        )
         hass.async_create_task(
             hass.config_entries.async_forward_entry_setup(entry, "camera")
         )

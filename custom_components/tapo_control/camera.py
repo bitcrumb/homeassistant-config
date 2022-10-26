@@ -1,12 +1,13 @@
 import asyncio
 import urllib.parse
 import haffmpeg.sensor as ffmpeg_sensor
+from .utils import build_device_info, syncTime
 from homeassistant.helpers.config_validation import boolean
 from homeassistant.core import HomeAssistant
 from homeassistant.const import CONF_IP_ADDRESS, CONF_USERNAME, CONF_PASSWORD
 from homeassistant.core import callback
 from typing import Callable
-from pytapo import Tapo
+from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.util import slugify
 from homeassistant.helpers import entity_platform
 from homeassistant.components.camera import (
@@ -20,6 +21,7 @@ from homeassistant.helpers.aiohttp_client import async_aiohttp_proxy_stream
 from haffmpeg.camera import CameraMjpeg
 from haffmpeg.tools import IMAGE_JPEG, ImageFrame
 from .const import (
+    CONF_RTSP_TRANSPORT,
     CONF_CUSTOM_STREAM,
     ENABLE_SOUND_DETECTION,
     ENABLE_STREAM,
@@ -54,6 +56,11 @@ from .const import (
     PAN,
     PRESET,
     NAME,
+    BRAND,
+    SERVICE_SET_ALARM,
+    SCHEMA_SERVICE_SET_ALARM,
+    SERVICE_SYNCHRONIZE_TIME,
+    SCHEMA_SERVICE_SYNCHRONIZE_TIME,
 )
 
 
@@ -104,6 +111,12 @@ async def async_setup_entry(
     platform.async_register_entity_service(
         SERVICE_FORMAT, SCHEMA_SERVICE_FORMAT, "format",
     )
+    platform.async_register_entity_service(
+        SERVICE_SET_ALARM, SCHEMA_SERVICE_SET_ALARM, "set_alarm",
+    )
+    platform.async_register_entity_service(
+        SERVICE_SYNCHRONIZE_TIME, SCHEMA_SERVICE_SYNCHRONIZE_TIME, "synchronize_time",
+    )
 
     hass.data[DOMAIN][entry.entry_id]["entities"] = [
         TapoCamEntity(hass, entry, hass.data[DOMAIN][entry.entry_id], True),
@@ -114,9 +127,10 @@ async def async_setup_entry(
 
 class TapoCamEntity(Camera):
     def __init__(
-        self, hass: HomeAssistant, entry: dict, tapoData: Tapo, HDStream: boolean,
+        self, hass: HomeAssistant, entry: dict, tapoData: dict, HDStream: boolean,
     ):
         super().__init__()
+        self.stream_options[CONF_RTSP_TRANSPORT] = entry.data.get(CONF_RTSP_TRANSPORT)
         self._controller = tapoData["controller"]
         self._coordinator = tapoData["coordinator"]
         self._ffmpeg = hass.data[DATA_FFMPEG]
@@ -198,16 +212,8 @@ class TapoCamEntity(Camera):
         return self._state
 
     @property
-    def device_info(self):
-        return {
-            "identifiers": {
-                (DOMAIN, slugify(f"{self._attributes['mac']}_tapo_control"))
-            },
-            "name": self._attributes["device_alias"],
-            "manufacturer": "TP-Link",
-            "model": self._attributes["device_model"],
-            "sw_version": self._attributes["sw_version"],
-        }
+    def device_info(self) -> DeviceInfo:
+        return build_device_info(self._attributes)
 
     @property
     def motion_detection_enabled(self):
@@ -215,7 +221,7 @@ class TapoCamEntity(Camera):
 
     @property
     def brand(self):
-        return "TP-Link"
+        return BRAND
 
     @property
     def model(self):
@@ -454,6 +460,16 @@ class TapoCamEntity(Camera):
 
     async def reboot(self):
         await self.hass.async_add_executor_job(self._controller.reboot)
+
+    async def synchronize_time(self):
+        await syncTime(self._hass, self._entry)
+
+    async def set_alarm(self, alarm):
+        if alarm == "on":
+            await self.hass.async_add_executor_job(self._controller.startManualAlarm)
+        else:
+            await self.hass.async_add_executor_job(self._controller.stopManualAlarm)
+        await self._coordinator.async_request_refresh()
 
     async def save_preset(self, name):
         if not name == "" and not name.isnumeric():
