@@ -1,0 +1,22 @@
+---
+- id: '1617562334938'
+  alias: ⛽️ Warn on low fuel level (< 20%)
+  description: ''
+  trigger:
+  - platform: numeric_state
+    entity_id: sensor.volvo_v60_fuel_level
+    below: '20'
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: ⛽️ Low on fuel
+      message: Your Volvo V60 is low on fuel. Please go to the nearest gas station
+        and refill.
+      data:
+        push:
+          sound:
+            name: default
+            critical: 1
+            volume: 1
+  mode: single

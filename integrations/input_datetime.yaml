@@ -8,9 +8,14 @@ input_datetime:
     name: Bedtime Report Time
     has_date: false
     has_time: true
-    initial: "20:00"
+    initial: "20:20"
   homework_report_time:
-    name: Hoemwork Report Time
+    name: Homework Report Time
     has_date: false
     has_time: true
     initial: "17:00"
+  leave_for_school_report_time:
+    name: Leave for School Report Time
+    has_date: false
+    has_time: true
+    initial: "08:00"
