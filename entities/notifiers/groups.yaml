@@ -12,7 +12,14 @@
 - platform: group
   name: "Ellen Devices"
   services:
-    - service: mobile_app_huawei_ellen
+    - service: mobile_app_iphone_13_ellen
+
+- platform: group
+  name: "Parents Devices"
+  services:
+    - service: mobile_app_iphone_12_pro_max_lode
+    - service: mobile_app_macbook_pro_lode
+    - service: mobile_app_iphone_13_ellen
 
 - platform: group
   name: "Otis Devices"
@@ -23,3 +30,9 @@
   name: "Juna Devices"
   services:
     - service: mobile_app_ipad_air_juna
+
+- platform: group
+  name: "Children Devices"
+  services:
+    - service: mobile_app_ipad_air_juna
+    - service: mobile_app_ipad_air_otis

@@ -23,15 +23,17 @@ utility_meter:
   house_consumption_monthly:
     source: sensor.house_consumption_sum
     cycle: monthly
+
   smart_plug_fridge_consumption_yearly:
-    source: sensor.smart_plug_kitchen_energy
+    source: sensor.smart_plug_fridge_energy
     cycle: yearly
   smart_plug_fridge_consumption_monthly:
-    source: sensor.smart_plug_kitchen_energy
+    source: sensor.smart_plug_fridge_energy
     cycle: monthly
   smart_plug_fridge_consumption_daily:
-    source: sensor.smart_plug_kitchen_energy
+    source: sensor.smart_plug_fridge_energy
     cycle: daily
+
   smart_plug_office_consumption_yearly:
     source: sensor.smart_plug_office_energy
     cycle: yearly
@@ -40,4 +42,54 @@ utility_meter:
     cycle: monthly
   smart_plug_office_consumption_daily:
     source: sensor.smart_plug_office_energy
+    cycle: daily
+
+  smart_plug_dishwasher_consumption_yearly:
+    source: sensor.smart_plug_dishwasher_energy
+    cycle: yearly
+  smart_plug_dishwasher_consumption_monthly:
+    source: sensor.smart_plug_dishwasher_energy
+    cycle: monthly
+  smart_plug_dishwasher_consumption_daily:
+    source: sensor.smart_plug_dishwasher_energy
+    cycle: daily
+
+  smart_plug_freezer_consumption_yearly:
+    source: sensor.smart_plug_freezer_energy
+    cycle: yearly
+  smart_plug_freezer_consumption_monthly:
+    source: sensor.smart_plug_freezer_energy
+    cycle: monthly
+  smart_plug_freezer_consumption_daily:
+    source: sensor.smart_plug_freezer_energy
+    cycle: daily
+
+  smart_plug_washer_consumption_yearly:
+    source: sensor.smart_plug_washer_energy
+    cycle: yearly
+  smart_plug_washer_consumption_monthly:
+    source: sensor.smart_plug_washer_energy
+    cycle: monthly
+  smart_plug_washer_consumption_daily:
+    source: sensor.smart_plug_washer_energy
+    cycle: daily
+
+  smart_plug_dryer_consumption_yearly:
+    source: sensor.smart_plug_dryer_energy
+    cycle: yearly
+  smart_plug_dryer_consumption_monthly:
+    source: sensor.smart_plug_dryer_energy
+    cycle: monthly
+  smart_plug_dryer_consumption_daily:
+    source: sensor.smart_plug_dryer_energy
+    cycle: daily
+
+  smart_plug_heatpump_consumption_yearly:
+    source: sensor.smart_plug_heatpump_energy
+    cycle: yearly
+  smart_plug_heatpump_consumption_monthly:
+    source: sensor.smart_plug_heatpump_energy
+    cycle: monthly
+  smart_plug_heatpump_consumption_daily:
+    source: sensor.smart_plug_heatpump_energy
     cycle: daily

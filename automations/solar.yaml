@@ -3,13 +3,16 @@
   alias: ⚡️ Daily notification of solar panel energy production & income
   description: ''
   trigger:
-  - platform: time
-    at: input_datetime.solar_panel_report_time
+    - platform: time
+      at: input_datetime.solar_panel_report_time
+    - platform: sun
+      event: sunset
+      offset: "-01:00:00"
   condition: []
   action:
   - service: notify.lode_devices
     data:
       title: ⚡️ Daily solar panel production
-      message: Your solar panels produced {{ states('sensor.pv_eday') }}KWh today,
-        this equals {{ states('sensor.pv_iday') }}€.
+      message: Your solar panels produced {{ states('sensor.inverter_pv_eday') }}KWh today,
+        this equals {{ states('sensor.inverter_pv_iday') }}€.
   mode: single

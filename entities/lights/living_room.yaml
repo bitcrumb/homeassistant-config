@@ -5,11 +5,13 @@
 #
 - platform: group
   name: TV Spots
+  unique_id: "6bd1f0e0-84c4-11ec-a88c-7f7155c6981c"
   entities:
     - light.led_tv_links
     - light.led_tv_midden
     - light.led_tv_rechts
 - platform: group
   name: TV LED Strip
+  unique_id: "71497a20-84c4-11ec-a88c-7f7155c6981c"
   entities:
     - light.led_strip_tv

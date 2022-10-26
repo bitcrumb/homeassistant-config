@@ -1,8 +1,0 @@
----
-printer:
-  name: Printer
-  entities:
-    - sensor.ink_level_black
-    - sensor.ink_level_cyan
-    - sensor.ink_level_magenta
-    - sensor.ink_level_yellow

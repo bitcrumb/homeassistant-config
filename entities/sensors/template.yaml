@@ -8,43 +8,43 @@
 # See: http://sems.com.cn:82/Help/Api/GET-api-version-v2-PowerStation-GetSocStatus
 - platform: template
   sensors:
-    pv_power_output:
+    inverter_pv_power_output:
       value_template: "{{ state_attr('sensor.inverter_none', 'outputpower') }}"
       unit_of_measurement: "W"
       friendly_name: "PV Power output"
-    pv_temperature:
+    inverter_pv_temperature:
       value_template: "{{ state_attr('sensor.inverter_none', 'tempperature') }}"
       unit_of_measurement: "C"
       friendly_name: "PV Temperature"
-    pv_eday:
+    inverter_pv_eday:
       value_template: "{{ state_attr('sensor.inverter_none', 'eday') }}"
       unit_of_measurement: "kWh"
       friendly_name: "PV energy day"
-    pv_etotal:
+    inverter_pv_etotal:
       value_template: "{{ state_attr('sensor.inverter_none', 'etotal') }}"
       unit_of_measurement: "kWh"
       friendly_name: "PV energy total"
-    pv_iday:
+    inverter_pv_iday:
       value_template: "{{ state_attr('sensor.inverter_none', 'iday') }}"
       unit_of_measurement: "€"
       friendly_name: "PV income day"
-    pv_itotal:
+    inverter_pv_itotal:
       value_template: "{{ state_attr('sensor.inverter_none', 'itotal') }}"
       unit_of_measurement: "€"
       friendly_name: "PV income total"
-    pv_excess:
+    inverter_pv_excess:
       value_template: "{{ state_attr('sensor.inverter_none', 'pmeter') }}"
       unit_of_measurement: "W"
       friendly_name: "PV spare"
-    pv_soc:
+    inverter_pv_soc:
       value_template: "{{ state_attr('sensor.inverter_none', 'soc') }}"
       unit_of_measurement: "%"
       friendly_name: "PV Battery power"
-    pv_etotal_last_month:
+    inverter_pv_etotal_last_month:
       value_template: "{{ state_attr('sensor.inverter_none', 'lastmonthetotle') }}"
       unit_of_measurement: "kWh"
       friendly_name: "PV energy last month"
-    pv_etotal_this_month:
+    inverter_pv_etotal_this_month:
       value_template: "{{ state_attr('sensor.inverter_none', 'thismonthetotle') }}"
       unit_of_measurement: "kWh"
       friendly_name: "PV energy this month"

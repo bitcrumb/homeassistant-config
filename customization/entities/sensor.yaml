@@ -3,27 +3,27 @@
 #
 # https://www.home-assistant.io/docs/configuration/customizing-devices/
 #
-sensor.pv_iday:
+sensor.inverter_pv_iday:
   icon: mdi:currency-usd
-sensor.pv_itotal:
+sensor.inverter_pv_itotal:
   icon: mdi:currency-usd
-sensor.pv_soc:
+sensor.inverter_pv_soc:
   icon: mdi:battery
-sensor.pv_eday:
+sensor.inverter_pv_eday:
   icon: mdi:lightning-bolt
-sensor.pv_etotal:
+sensor.inverter_pv_etotal:
   icon: mdi:lightning-bolt
-sensor.pv_etotal_last_month:
+sensor.inverter_pv_etotal_last_month:
   icon: mdi:lightning-bolt
-sensor.pv_etotal_this_month:
+sensor.inverter_pv_etotal_this_month:
   icon: mdi:lightning-bolt
-sensor.pv_temperature:
+sensor.inverter_pv_temperature:
   icon: mdi:thermometer
 sensor.excess:
   icon: mdi:power-plug-off-outline
-sensor.pv_power_output:
+sensor.inverter_pv_power_output:
   icon: mdi:power-plug
-sensor.pv_turnon_time:
+sensor.inverter_pv_turnon_time:
   icon: mdi:clock-outline
 sensor.recycleapp_glas:
   icon: mdi:glass-cocktail

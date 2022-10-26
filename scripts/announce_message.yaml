@@ -1,4 +1,4 @@
-alias: Cast a message to all Google Cast speakers
+alias: Announce a message to chromecast speakers
 sequence:
   - service: media_player.volume_set
     target:

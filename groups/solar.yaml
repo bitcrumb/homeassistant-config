@@ -1,12 +1,78 @@
 ---
-pv:
-  name: Solar Panels
+pv_api:
+  name: Goodwe Solar Panels (API, Templated)
   entities:
-    - sensor.pv_soc
-    - sensor.pv_eday
-    - sensor.pv_etotal
-    - sensor.pv_iday
-    - sensor.pv_itotal
-    - sensor.pv_power_output
-    - sensor.pv_excess
-    - sensor.pv_temperature
+    - sensor.inverter_pv_soc
+    - sensor.inverter_pv_eday
+    - sensor.inverter_pv_etotal
+    - sensor.inverter_pv_iday
+    - sensor.inverter_pv_itotal
+    - sensor.inverter_pv_power_output
+    - sensor.inverter_pv_excess
+    - sensor.inverter_pv_temperature
+    - sensor.inverter_pv_etotal_last_month
+    - sensor.inverter_pv_etotal_this_month
+# pv_udp:
+#   name: Solar Panels (UDP)
+#   entities:
+#     - sensor.goodwe_iload
+#     - sensor.goodwe_fload
+#     - sensor.goodwe_pback_up
+#     - sensor.goodwe_vload
+#     - sensor.goodwe_battery_charge_limit
+#     - sensor.goodwe_ibattery1
+#     - sensor.goodwe_battery_discharge_limit
+#     - sensor.goodwe_battery_error
+#     - sensor.goodwe_battery_mode_label
+#     - sensor.goodwe_battery_mode
+#     - sensor.goodwe_pbattery1
+#     - sensor.goodwe_battery_soc
+#     - sensor.goodwe_battery_soh
+#     - sensor.goodwe_battery_status
+#     - sensor.goodwe_battery_temperature
+#     - sensor.goodwe_vbattery1
+#     - sensor.goodwe_battery_warning
+#     - sensor.goodwe_diagnose_result_label
+#     - sensor.goodwe_diagnose_result
+#     - sensor.goodwe_effective_relay_control
+#     - sensor.goodwe_effective_work_mode
+#     - sensor.goodwe_work_mode_label
+#     - sensor.goodwe_work_mode
+#     - sensor.goodwe_error_codes
+#     - sensor.goodwe_h_total
+#     - sensor.goodwe_house_consumption
+#     - sensor.goodwe_temperature
+#     - sensor.goodwe_load_mode_label
+#     - sensor.goodwe_load_mode
+#     - sensor.goodwe_meter_power_factor
+#     - sensor.goodwe_meter_status
+#     - sensor.goodwe_igrid
+#     - sensor.goodwe_pgrid
+#     - sensor.goodwe_fgrid
+#     - sensor.goodwe_grid_in_out_label
+#     - sensor.goodwe_grid_in_out
+#     - sensor.goodwe_pload
+#     - sensor.goodwe_vgrid
+#     - sensor.goodwe_plant_power
+#     - sensor.goodwe_inverter
+#     - sensor.goodwe_ppv
+#     - sensor.goodwe_ipv1
+#     - sensor.goodwe_pv1_mode_label
+#     - sensor.goodwe_pv1_mode
+#     - sensor.goodwe_ppv1
+#     - sensor.goodwe_vpv1
+#     - sensor.goodwe_ipv2
+#     - sensor.goodwe_pv2_mode_label
+#     - sensor.goodwe_pv2_mode
+#     - sensor.goodwe_ppv2
+#     - sensor.goodwe_vpv2
+#     - sensor.goodwe_e_load_day
+#     - sensor.goodwe_e_day
+#     - sensor.goodwe_e_load_total
+#     - sensor.goodwe_total_power
+#     - sensor.goodwe_e_total
+#     - sensor.goodwe_xx85
+#     - sensor.goodwe_xx87
+#     - sensor.goodwe_warning
+#     - sensor.goodwe_grid_mode_label
+#     - sensor.goodwe_grid_mode

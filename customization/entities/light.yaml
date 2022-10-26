@@ -13,3 +13,5 @@ light.office_ceiling_lights:
   icon: mdi:spotlight-beam
 light.office_wall_lights:
   icon: mdi:spotlight-beam
+light.office_mood_light:
+  icon: mdi:television-ambient-light

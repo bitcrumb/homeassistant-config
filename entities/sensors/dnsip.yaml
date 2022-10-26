@@ -1,7 +1,0 @@
----
-# The dnsip sensor will expose an IP address, fetched via DNS resolution, as its value. 
-#
-# https://www.home-assistant.io/integrations/dnsip/
-#
-- platform: dnsip
-  name: public_ip_address

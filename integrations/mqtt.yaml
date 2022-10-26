@@ -1,0 +1,24 @@
+---
+# This loads up my mqtt sensor configurations
+#
+# https://www.home-assistant.io/integrations/sensor.mqtt/
+#
+mqtt:
+  sensor:
+    - name: Zigbee2MQTT Bridge state
+      state_topic: 'zigbee2mqtt/bridge/state'
+      icon: mdi:router-wireless
+    - name: Zigbee2MQTT Version
+      state_topic: 'zigbee2mqtt/bridge/config'
+      value_template: '{{ value_json.version }}'
+      icon: mdi:zigbee
+    - name: Zigbee2MQTT Coordinator Version
+      state_topic: 'zigbee2mqtt/bridge/config'
+      value_template: '{{ value_json.coordinator }}'
+      icon: mdi:chip
+    - name: Zigbee2MQTT Networkmap
+      icon: mdi:lan-pending
+      state_topic: 'zigbee2mqtt/bridge/networkmap/raw'
+      value_template: >-
+        {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
+      json_attributes_topic: 'zigbee2mqtt/bridge/networkmap/raw'

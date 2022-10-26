@@ -1,10 +1,11 @@
 ---
-# Kitch light groups
+# Kitchen light groups
 #
 # https://www.home-assistant.io/integrations/light.group/
 #
 - platform: group
   name: Fridge Lights
+  unique_id: "76574510-84c4-11ec-a88c-7f7155c6981c"
   entities:
     - light.led_frigo_links
     - light.led_frigo_rechts

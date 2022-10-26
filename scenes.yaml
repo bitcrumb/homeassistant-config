@@ -2,16 +2,17 @@
   name: Zonnewering inklappen
   entities:
     cover.awning:
-      current_position: 0
-      friendly_name: Awning
-      icon: mdi:storefront-outline
-      supported_features: 527
+      current_position: 100
       device_class: awning
-      state: closed
+      icon: mdi:storefront-outline
+      friendly_name: Awning
+      supported_features: 15
+      state: open
     cover.screen:
       current_position: 100
-      friendly_name: Screen
-      icon: hass:blinds
-      supported_features: 527
       device_class: blind
+      icon: hass:blinds
+      friendly_name: Screen
+      supported_features: 15
       state: open
+  icon: mdi:blinds-open

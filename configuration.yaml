@@ -20,3 +20,9 @@ homeassistant:
 
   external_url: !secret homeassistant_external_url
   internal_url: !secret homeassistant_internal_url
+
+logger:
+  default: warning
+  logs:
+    custom_components.goodwe: debug
+    goodwe: debug

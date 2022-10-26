@@ -5,16 +5,19 @@
 #
 - platform: group
   name: Office Ceiling Lights
+  unique_id: "e7a81dd0-84be-11ec-a88c-7f7155c6981c"
   entities:
     - light.led_bureau_links
     - light.led_bureau_midden
     - light.led_bureau_rechts
 - platform: group
   name: Office Wall Lights
+  unique_id: "0ab3fab0-84bf-11ec-a88c-7f7155c6981c"
   entities:
     - light.led_bureaukast_links
     - light.led_bureaukast_rechts
 - platform: group
   name: Office Mood Light
+  unique_id: "124eb210-84bf-11ec-a88c-7f7155c6981c"
   entities:
     - light.led_sfeerlicht_bureau

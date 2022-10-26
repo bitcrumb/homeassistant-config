@@ -28,6 +28,6 @@ secrets.yaml
 .ps4-games.*.json
 airsonos.xml
 zigbee2mqtt
-rtsp2webrtc_v4_aarch64
+rtsp2webrtc_v5_aarch64
 google_service_account.json
 aircast.xml
