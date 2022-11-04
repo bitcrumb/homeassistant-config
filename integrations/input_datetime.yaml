@@ -1,9 +1,4 @@
 input_datetime:
-  solar_panel_report_time:
-    name: Solar Panel Report Time
-    has_date: false
-    has_time: true
-    initial: "19:00"
   bedtime_report_time:
     name: Bedtime Report Time
     has_date: false

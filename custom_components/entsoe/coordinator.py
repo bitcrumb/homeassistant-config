@@ -2,8 +2,13 @@ from __future__ import annotations
 
 import asyncio
 from datetime import timedelta
+from multiprocessing import AuthenticationError
+from aiohttp import ClientError
 import pandas as pd
 from entsoe import EntsoePandasClient
+from entsoe.exceptions import NoMatchingDataError
+from requests.exceptions import HTTPError
+
 import logging
 
 
@@ -14,29 +19,31 @@ import homeassistant.helpers.config_validation as cv
 from homeassistant.helpers.template import Template, attach
 from jinja2 import pass_context
 
-from .const import DEFAULT_TEMPLATE
+from .const import DEFAULT_MODIFYER, AREA_INFO
 
 
 class EntsoeCoordinator(DataUpdateCoordinator):
     """Get the latest data and update the states."""
 
-    def __init__(self, hass: HomeAssistant, api_key, area, modifyer) -> None:
+    def __init__(self, hass: HomeAssistant, api_key, area, modifyer, VAT = 0) -> None:
         """Initialize the data object."""
         self.hass = hass
         self.api_key = api_key
-        self.area = area
         self.modifyer = modifyer
+        self.area = AREA_INFO[area]["code"]
+        self.vat = VAT
+
 
         # Check incase the sensor was setup using config flow.
         # This blow up if the template isnt valid.
         if not isinstance(self.modifyer, Template):
             if self.modifyer in (None, ""):
-                self.modifyer = DEFAULT_TEMPLATE
+                self.modifyer = DEFAULT_MODIFYER
             self.modifyer = cv.template(self.modifyer)
         # check for yaml setup.
         else:
             if self.modifyer.template in ("", None):
-                self.modifyer = cv.template(DEFAULT_TEMPLATE)
+                self.modifyer = cv.template(DEFAULT_MODIFYER)
 
         attach(self.hass, self.modifyer)
 
@@ -45,35 +52,33 @@ class EntsoeCoordinator(DataUpdateCoordinator):
             hass,
             logger,
             name="ENTSO-e coordinator",
-            update_interval=timedelta(minutes=15),
+            update_interval=timedelta(minutes=60),
         )
 
     def calc_price(self, value, fake_dt=None, no_template=False) -> float:
         """Calculate price based on the users settings."""
-
         # Used to inject the current hour.
         # so template can be simplified using now
         if no_template:
             price = round(value / 1000, 5)
             return price
 
+        price = value / 1000
+        if fake_dt is not None:
+
+            def faker():
+                def inner(*args, **kwargs):
+                    return fake_dt
+
+                return pass_context(inner)
+
+            template_value = self.modifyer.async_render(now=faker(), current_price=price)
         else:
-            price = value / 1000
-            if fake_dt is not None:
+            template_value = self.modifyer.async_render()
 
-                def faker():
-                    def inner(*args, **kwargs):
-                        return fake_dt
+        price = round(template_value * (1 + self.vat), 5)
 
-                    return pass_context(inner)
-
-                template_value = self.modifyer.async_render(now=faker(), current_price=price)
-            else:
-                template_value = self.modifyer.async_render()
-
-            price = round(template_value, 5)
-
-            return price
+        return price
 
     def parse_hourprices(self, hourprices):
         for hour, price in hourprices.items():
@@ -83,19 +88,23 @@ class EntsoeCoordinator(DataUpdateCoordinator):
     async def _async_update_data(self) -> dict:
         """Get the latest data from ENTSO-e"""
         self.logger.debug("Fetching ENTSO-e data")
+        self.logger.debug(self.area)
 
         time_zone = dt.now().tzinfo
-        # We request data for today up until tomorrow.
-        today = pd.Timestamp.now(tz=str(time_zone)).replace(hour=0, minute=0, second=0)
+        # We request data for yesterday up until tomorrow.
+        yesterday = pd.Timestamp.now(tz=str(time_zone)).replace(hour=0, minute=0, second=0) - pd.Timedelta(days = 1)
+        tomorrow = yesterday + pd.Timedelta(hours = 71)
 
-        tomorrow = today + pd.Timedelta(hours=47)
-
-        data = await self.fetch_prices(today, tomorrow)
+        data = await self.fetch_prices(yesterday, tomorrow)
 
         parsed_data = self.parse_hourprices(data)
-        data_all = parsed_data.to_dict()
-        data_today = parsed_data[:24].to_dict()
-        data_tomorrow = parsed_data[24:48].to_dict()
+        data_all = parsed_data[-48:].to_dict()
+        if parsed_data.size > 48:
+            data_today = parsed_data[-48:-24].to_dict()
+            data_tomorrow = parsed_data[-24:].to_dict()
+        else:
+            data_today = parsed_data[-24:].to_dict()
+            data_tomorrow = {}
 
         return {
             "data": data_all,
@@ -112,15 +121,22 @@ class EntsoeCoordinator(DataUpdateCoordinator):
 
             return resp
 
-        except (asyncio.TimeoutError, KeyError) as error:
-            raise UpdateFailed(f"Fetching energy price data failed: {error}") from error
+        except NoMatchingDataError as exc:
+            raise UpdateFailed("ENTSO-e prices are unavailable at the moment.") from exc
+        except (HTTPError) as exc:
+            if exc.response.status_code == 401:
+                raise UpdateFailed("Unauthorized: Please check your API-key.") from exc
+        except Exception as exc:
+            raise UpdateFailed(f"Unexcpected error when fetching ENTSO-e prices: {exc}") from exc
+
+
 
     def api_update(self, start_date, end_date, api_key):
         client = EntsoePandasClient(api_key=api_key)
-
         return client.query_day_ahead_prices(
             country_code=self.area, start=start_date, end=end_date
         )
+
 
     def processed_data(self):
         return {

@@ -3,11 +3,9 @@
   alias: ⚡️ Daily notification of solar panel energy production & income
   description: ''
   trigger:
-    - platform: time
-      at: input_datetime.solar_panel_report_time
     - platform: sun
       event: sunset
-      offset: "-01:00:00"
+      offset: "01:00:00"
   condition: []
   action:
   - service: notify.lode_devices
