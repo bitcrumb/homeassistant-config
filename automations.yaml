@@ -558,3 +558,14 @@
       title: Internet connectivity has been restored.
       message: "\U0001F30D The internet connection is online again!"
   mode: parallel
+- id: '1667591166127'
+  alias: "\U0001F4A1 Turn on light, switch, scene, script or group based on motion
+    and illuminance."
+  description: ''
+  use_blueprint:
+    path: freakshock88/motion_illuminance_activated_entity.yaml
+    input:
+      motion_sensor: binary_sensor.tapo_camera_motion
+      target_entity: light.fridge_lights
+      illuminance_sensor: sensor.luminance_sensor_luminance
+      illuminance_cutoff: input_number.luminance_threshold
