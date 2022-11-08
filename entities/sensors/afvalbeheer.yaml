@@ -10,8 +10,8 @@
     - papier
     - pmd
     - glas
-  postcode: 9800
-  streetnumber: 24
-  streetname: Kleine Oostkouter
-  cityname: Petegem-aan-de-Leie
+  postcode: !secret address_postal_code
+  streetnumber: !secret address_streetnumber
+  streetname: !secret address_streetname
+  cityname: !secret address_cityname
   upcomingsensor: 1
