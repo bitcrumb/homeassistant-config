@@ -1,0 +1,9 @@
+---
+# Add an RSS/Atom feed reader that polls feeds every hour and sends new entries into the event bus.
+#
+# See: https://www.home-assistant.io/integrations/feedreader/
+feedreader:
+  urls:
+    - https://rpilocator.com/feed
+  scan_interval:
+    minutes: 15
