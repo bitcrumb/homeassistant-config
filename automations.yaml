@@ -569,3 +569,24 @@
       target_entity: light.fridge_lights
       illuminance_sensor: sensor.luminance_sensor_luminance
       illuminance_cutoff: input_number.luminance_threshold
+- id: '1667762237876'
+  alias: Raspberry Pi 4 Alerts (BE)
+  description: ''
+  use_blueprint:
+    path: giqcass/rpilocator-notification-blueprint.yaml
+    input:
+      zero_2_w: --NO--
+      notify_device: 6c73da0af7acff5576126d44fa3c27f7
+      country_code: Stock Alert (BE)
+      pi4: RPi 4
+- id: '1667762256346'
+  alias: Raspberry Pi 4 Alerts (NL)
+  description: ''
+  use_blueprint:
+    path: giqcass/rpilocator-notification-blueprint.yaml
+    input:
+      zero_2_w: --NO--
+      notify_device: 6c73da0af7acff5576126d44fa3c27f7
+      country_code: Stock Alert (NL)
+      pi4: RPi 4
+      cm4_mmc: MMC
