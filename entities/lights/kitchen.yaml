@@ -9,3 +9,9 @@
   entities:
     - light.led_frigo_links
     - light.led_frigo_rechts
+- platform: group
+  name: Kitchen Lights
+  unique_id: "0ce6f2b0-19fb-4ed8-a463-10988da310a9"
+  entities:
+    - light.led_keuken_links
+    - light.led_keuken_rechts

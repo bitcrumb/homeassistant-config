@@ -1,6 +1,6 @@
 ---
 # The google_assistant integration allows you to control things via Google Assistant on your mobile, tablet or Google Home device.
-# 
+#
 # See: https://www.home-assistant.io/integrations/google_assistant/
 #
 google_assistant:
@@ -26,17 +26,23 @@ google_assistant:
   #   - camera
   entity_config:
     light.tv_spots:
-      name: "TV Spots"
+      name: 'Spots TV'
     light.tv_led_strip:
-      name: "TV LED Strip"
+      name: 'LED Strip TV'
+    light.led_strip_juna:
+      name: 'LED Strip Juna'
+    light.led_strip_otis:
+      name: 'LED Strip Otis'
     light.fridge_lights:
-      name: "Frigo"
+      name: 'Frigo'
     light.office_ceiling_lights:
-      name: "Bureau plafond"
+      name: 'Bureau plafond'
     light.office_wall_lights:
-      name: "Bureau muur"
+      name: 'Bureau muur'
     light.office_mood_light:
-      name: "Bureau sfeerlicht"
+      name: 'Bureau sfeerlicht'
+    light.kitchen_lights:
+      name: 'Keuken lichten'
     # cover.awning:
     #   name: "Luifel"
     # cover.screen:
