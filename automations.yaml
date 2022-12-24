@@ -418,13 +418,16 @@
   description: ''
   trigger:
   - platform: time_pattern
-    hours: '*'
-    minutes: '0'
+    hours: '23'
+    minutes: '59'
     seconds: '0'
   condition: []
   action:
-  - service: rest_command.energyid
-    data: {}
+  - service: energy_id.set_meter_reading
+    data:
+      device_id: 40beff9400472b34909cdd9d8852d748
+      value: '{{ states(''sensor.inverter_solar_energy'') }}'
+      date: '{{ now().isoformat() }}'
   mode: single
 - id: '1663759730449'
   alias: Dishwasher started
