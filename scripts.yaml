@@ -25,8 +25,8 @@ spotify_start:
   sequence:
   - service: spotcast.start
     data:
-      entity_id: "{% set selected_device = states('input_select.chromecast_audio').lower()\
-        \ %} {{ 'media_player.' + selected_device }}     \n"
+      entity_id: "{% set selected_device = states('input_select.chromecast_audio').lower()
+        %} {{ 'media_player.' + selected_device }}     \n"
       force_playback: true
   mode: single
   icon: mdi:spotify
@@ -55,3 +55,23 @@ cast_message:
       entity_id: media_player.alle_speakers
   mode: single
   icon: mdi:account-voice
+set_electricity_consumption:
+  alias: Send electricity consumption to EnergyID
+  sequence:
+  - service: energy_id.set_meter_reading
+    data:
+      device_id: d204951ddbc573763e372d9565b2eb3d
+      value: '{{ states(''input_number.electricity_consumption'') | int }}'
+      date: '{{ now().isoformat() }}'
+  mode: single
+  icon: mdi:lightning-bolt
+send_water_consumption_to_energyid:
+  alias: Send water consumption to EnergyID
+  sequence:
+  - service: energy_id.set_meter_reading
+    data:
+      device_id: e6246907c606b4607663e321954bf678
+      value: '{{ states(''input_number.water_consumption'') | int }}'
+      date: '{{ now().isoformat() }}'
+  mode: single
+  icon: mdi:water
