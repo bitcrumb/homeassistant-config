@@ -1,5 +1,5 @@
+from homeassistant.const import STATE_UNAVAILABLE
 from homeassistant.core import HomeAssistant
-
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
@@ -20,27 +20,48 @@ async def async_setup_entry(
     LOGGER.debug("Setting up selects")
     entry = hass.data[DOMAIN][config_entry.entry_id]
 
-    selects = []
-    LOGGER.debug("Adding TapoNightVisionSelect...")
-    selects.append(TapoNightVisionSelect(entry, hass, config_entry))
-    LOGGER.debug("Adding TapoAutomaticAlarmModeSelect...")
-    selects.append(TapoAutomaticAlarmModeSelect(entry, hass, config_entry))
-    LOGGER.debug("Adding TapoLightFrequencySelect...")
-    selects.append(TapoLightFrequencySelect(entry, hass, config_entry))
+    async def setupEntities(entry):
+        selects = []
 
-    tapoMotionDetectionSelect = await check_and_create(
-        entry, hass, TapoMotionDetectionSelect, "getMotionDetection", config_entry
-    )
-    if tapoMotionDetectionSelect:
-        LOGGER.debug("Adding TapoMotionDetectionSelect...")
-        selects.append(tapoMotionDetectionSelect)
+        tapoNightVisionSelect = await check_and_create(
+            entry, hass, TapoNightVisionSelect, "getDayNightMode", config_entry
+        )
+        if tapoNightVisionSelect:
+            LOGGER.debug("Adding tapoNightVisionSelect...")
+            selects.append(tapoNightVisionSelect)
 
-    tapoMoveToPresetSelect = await check_and_create(
-        entry, hass, TapoMoveToPresetSelect, "getPresets", config_entry
-    )
-    if tapoMoveToPresetSelect:
-        LOGGER.debug("Adding TapoMoveToPresetSelect...")
-        selects.append(tapoMoveToPresetSelect)
+        tapoLightFrequencySelect = await check_and_create(
+            entry, hass, TapoLightFrequencySelect, "getLightFrequencyMode", config_entry
+        )
+        if tapoLightFrequencySelect:
+            LOGGER.debug("Adding tapoLightFrequencySelect...")
+            selects.append(tapoLightFrequencySelect)
+
+        tapoAutomaticAlarmModeSelect = await check_and_create(
+            entry, hass, TapoAutomaticAlarmModeSelect, "getAlarm", config_entry
+        )
+        if tapoAutomaticAlarmModeSelect:
+            LOGGER.debug("Adding tapoAutomaticAlarmModeSelect...")
+            selects.append(tapoAutomaticAlarmModeSelect)
+
+        tapoMotionDetectionSelect = await check_and_create(
+            entry, hass, TapoMotionDetectionSelect, "getMotionDetection", config_entry
+        )
+        if tapoMotionDetectionSelect:
+            LOGGER.debug("Adding TapoMotionDetectionSelect...")
+            selects.append(tapoMotionDetectionSelect)
+
+        tapoMoveToPresetSelect = await check_and_create(
+            entry, hass, TapoMoveToPresetSelect, "getPresets", config_entry
+        )
+        if tapoMoveToPresetSelect:
+            LOGGER.debug("Adding TapoMoveToPresetSelect...")
+            selects.append(tapoMoveToPresetSelect)
+        return selects
+
+    selects = await setupEntities(entry)
+    for childDevice in entry["childDevices"]:
+        selects.extend(await setupEntities(childDevice))
 
     async_add_entities(selects)
 
@@ -59,6 +80,9 @@ class TapoNightVisionSelect(TapoSelectEntity):
             "night_vision",
         )
 
+    async def async_update(self) -> None:
+        await self._coordinator.async_request_refresh()
+
     def updateTapo(self, camData):
         if not camData:
             self._attr_state = "unavailable"
@@ -70,7 +94,7 @@ class TapoNightVisionSelect(TapoSelectEntity):
         result = await self._hass.async_add_executor_job(
             self._controller.setDayNightMode, option
         )
-        if result["error_code"] == 0:
+        if "error_code" not in result or result["error_code"] == 0:
             self._attr_state = option
         self.async_write_ha_state()
         await self._coordinator.async_request_refresh()
@@ -85,13 +109,11 @@ class TapoLightFrequencySelect(TapoSelectEntity):
         )
 
     async def async_update(self) -> None:
-        self._attr_current_option = await self._hass.async_add_executor_job(
-            self._controller.getLightFrequencyMode
-        )
+        await self._coordinator.async_request_refresh()
 
     def updateTapo(self, camData):
         if not camData:
-            self._attr_state = "unavailable"
+            self._attr_state = STATE_UNAVAILABLE
         else:
             self._attr_current_option = camData["light_frequency_mode"]
             self._attr_state = self._attr_current_option
@@ -100,7 +122,7 @@ class TapoLightFrequencySelect(TapoSelectEntity):
         result = await self._hass.async_add_executor_job(
             self._controller.setLightFrequencyMode, option
         )
-        if result["error_code"] == 0:
+        if "error_code" not in result or result["error_code"] == 0:
             self._attr_state = option
         self.async_write_ha_state()
         await self._coordinator.async_request_refresh()
@@ -120,9 +142,12 @@ class TapoAutomaticAlarmModeSelect(TapoSelectEntity):
             "alarm",
         )
 
+    async def async_update(self) -> None:
+        await self._coordinator.async_request_refresh()
+
     def updateTapo(self, camData):
         if not camData:
-            self._attr_state = "unavailable"
+            self._attr_state = STATE_UNAVAILABLE
         else:
             if camData["alarm"] == "off":
                 self._attr_current_option = "off"
@@ -153,7 +178,7 @@ class TapoAutomaticAlarmModeSelect(TapoSelectEntity):
             option == "off" or option in ["both", "sound"],
             option == "off" or option in ["both", "light"],
         )
-        if result["error_code"] == 0:
+        if "error_code" not in result or result["error_code"] == 0:
             self._attr_state = option
         self.async_write_ha_state()
         await self._coordinator.async_request_refresh()
@@ -173,11 +198,14 @@ class TapoMotionDetectionSelect(TapoSelectEntity):
             "motion_detection",
         )
 
+    async def async_update(self) -> None:
+        await self._coordinator.async_request_refresh()
+
     def updateTapo(self, camData):
         LOGGER.debug("TapoMotionDetectionSelect updateTapo 1")
         if not camData:
             LOGGER.debug("TapoMotionDetectionSelect updateTapo 2")
-            self._attr_state = "unavailable"
+            self._attr_state = STATE_UNAVAILABLE
         else:
             LOGGER.debug("TapoMotionDetectionSelect updateTapo 3")
             if camData["motion_detection_enabled"] == "off":
@@ -196,7 +224,7 @@ class TapoMotionDetectionSelect(TapoSelectEntity):
             option != "off",
             option if option != "off" else False,
         )
-        if result["error_code"] == 0:
+        if "error_code" not in result or result["error_code"] == 0:
             self._attr_state = option
         self.async_write_ha_state()
         await self._coordinator.async_request_refresh()
@@ -211,9 +239,12 @@ class TapoMoveToPresetSelect(TapoSelectEntity):
             self, "Move to Preset", entry, hass, config_entry, "mdi:arrow-decision"
         )
 
+    async def async_update(self) -> None:
+        await self._coordinator.async_request_refresh()
+
     def updateTapo(self, camData):
         if not camData:
-            self._attr_state = "unavailable"
+            self._attr_state = STATE_UNAVAILABLE
         else:
             self._presets = camData["presets"]
             self._attr_options = list(camData["presets"].values())
