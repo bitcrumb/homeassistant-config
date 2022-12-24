@@ -31,3 +31,6 @@ zigbee2mqtt
 rtsp2webrtc_v5_aarch64
 google_service_account.json
 aircast.xml
+
+# Feedreader
+feedreader.pickle
