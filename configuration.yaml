@@ -11,6 +11,7 @@ homeassistant:
 
   # Home zone settings
   name: Home
+  country: BE
   latitude: !secret zone_home_latitude
   longitude: !secret zone_home_longitude
   elevation: 6
