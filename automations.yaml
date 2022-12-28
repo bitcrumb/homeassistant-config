@@ -142,17 +142,17 @@
   trigger:
   - platform: state
     entity_id:
-    - light.led_frigo_links
-    - light.led_frigo_rechts
-    - light.led_tv_links
-    - light.led_tv_midden
-    - light.led_tv_rechts
-    - light.led_bureau_links
-    - light.led_bureau_midden
-    - light.led_bureau_rechts
-    - light.led_bureaukast_links
-    - light.led_bureaukast_rechts
-    - light.led_sfeerlicht_bureau
+    - light.led_fridge_left
+    - light.led_fridge_right
+    - light.led_tv_left
+    - light.led_tv_center
+    - light.led_tv_right
+    - light.led_office_desk_left
+    - light.led_office_desk_center
+    - light.led_office_desk_right
+    - light.led_office_wall_left
+    - light.led_office_wall_right
+    - light.led_office_mood
     to: unavailable
     for:
       minutes: 5

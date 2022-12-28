@@ -7,11 +7,11 @@
   name: Fridge Lights
   unique_id: "76574510-84c4-11ec-a88c-7f7155c6981c"
   entities:
-    - light.led_frigo_links
-    - light.led_frigo_rechts
+    - light.led_fridge_left
+    - light.led_fridge_right
 - platform: group
   name: Kitchen Lights
   unique_id: "0ce6f2b0-19fb-4ed8-a463-10988da310a9"
   entities:
-    - light.led_keuken_links
-    - light.led_keuken_rechts
+    - light.led_kitchen_left
+    - light.led_kitchen_right

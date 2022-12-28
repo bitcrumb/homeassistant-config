@@ -36,11 +36,11 @@ google_assistant:
     light.fridge_lights:
       name: 'Frigo'
     light.office_ceiling_lights:
-      name: 'Bureau plafond'
+      name: 'Kantoor bureay'
     light.office_wall_lights:
-      name: 'Bureau muur'
+      name: 'Kantoor muur'
     light.office_mood_light:
-      name: 'Bureau sfeerlicht'
+      name: 'Kantoor sfeerlicht'
     light.kitchen_lights:
       name: 'Keuken lichten'
     # cover.awning:
