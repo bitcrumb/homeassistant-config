@@ -33,6 +33,7 @@ TOGGLE_STATES = ["on", "off"]
 CONF_RTSP_TRANSPORT = "rtsp_transport"
 RTSP_TRANS_PROTOCOLS = ["tcp", "udp", "udp_multicast", "http"]
 
+ENABLE_WEBHOOKS = "enable_webhooks"
 ENABLE_STREAM = "enable_stream"
 ENABLE_SOUND_DETECTION = "enable_sound_detection"
 SOUND_DETECTION_PEAK = "sound_detection_peak"
@@ -44,8 +45,11 @@ ENABLE_TIME_SYNC = "enable_time_sync"
 LOGGER = logging.getLogger("custom_components." + DOMAIN)
 
 TIME_SYNC_PERIOD = 3600
+MEDIA_CLEANUP_PERIOD = 10 * 60
 UPDATE_CHECK_PERIOD = 86400
 
+COLD_DIR_DELETE_TIME = 24 * 60 * 60
+HOT_DIR_DELETE_TIME = 60 * 60
 
 SERVICE_SAVE_PRESET = "save_preset"
 SCHEMA_SERVICE_SAVE_PRESET = {

@@ -217,7 +217,7 @@ def _migrate_token(hass: HomeAssistant, entry: ConfigEntry, hostname: str) -> No
             return
 
     try:
-        with open(token_file, "r") as os_token_file:
+        with open(token_file, "r", encoding="utf-8") as os_token_file:
             token = os_token_file.readline()
     except Exception as exc:  # pylint: disable=broad-except
         _LOGGER.error("Error reading token file %s: %s", token_file, str(exc))
@@ -384,7 +384,6 @@ class SamsungTVInfo:
             return RESULT_NOT_SUCCESSFUL
 
         for port in (8001, 8002):
-
             try:
                 _LOGGER.info(
                     "Try to configure SamsungTV %s using port %s",
@@ -482,7 +481,6 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
     if DOMAIN in config:
         entries_list = hass.config_entries.async_entries(DOMAIN)
         for entry_config in config[DOMAIN]:
-
             # get ip address
             ip_address = entry_config[CONF_HOST]
 

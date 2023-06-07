@@ -6,7 +6,6 @@ from homeassistant.util import slugify
 
 # Base component constants
 DOMAIN = "eventsensor"
-PLATFORM = "sensor"
 DOMAIN_DATA = f"{DOMAIN}_data"
 
 CONF_STATE_MAP = "state_map"
@@ -148,7 +147,7 @@ def _flatten_state(state):
     if isinstance(state, list):
         return ",".join(map(_flatten_state, state))
     elif isinstance(state, dict):
-        return ",".join(map(lambda x: ":".join(map(_flatten_state, x)), state.items()))
+        return ",".join([":".join(map(_flatten_state, x)) for x in state.items()])
     return str(state)
 
 

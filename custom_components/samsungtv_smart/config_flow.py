@@ -52,7 +52,6 @@ from .const import (
     CONF_EXT_POWER_ENTITY,
     CONF_LOGO_OPTION,
     CONF_PING_PORT,
-    CONF_POWER_ON_DELAY,
     CONF_POWER_ON_METHOD,
     CONF_SHOW_CHANNEL_NR,
     CONF_SOURCE_LIST,
@@ -65,7 +64,6 @@ from .const import (
     CONF_USE_ST_STATUS_INFO,
     CONF_WOL_REPEAT,
     CONF_WS_NAME,
-    DEFAULT_POWER_ON_DELAY,
     DOMAIN,
     MAX_WOL_REPEAT,
     RESULT_ST_DEVICE_NOT_FOUND,
@@ -117,7 +115,6 @@ ADVANCED_OPTIONS = [
     CONF_EXT_POWER_ENTITY,
     CONF_PING_PORT,
     CONF_WOL_REPEAT,
-    CONF_POWER_ON_DELAY,
     CONF_TOGGLE_ART_MODE,
     CONF_USE_MUTE_CHECK,
 ]
@@ -432,6 +429,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
     def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
         """Initialize options flow."""
         self._entry_id = config_entry.entry_id
+        self._adv_chk = False
         self._std_options = config_entry.options.copy()
         self._adv_options = {
             key: values
@@ -466,9 +464,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         return self.async_create_entry(title="", data=entry_data)
 
     async def async_step_init(self, user_input=None):
-        """Handle options flow."""
+        """Handle initial options flow."""
         if user_input is not None:
-            if user_input.pop(CONF_SHOW_ADV_OPT, False):
+            if self._adv_chk or user_input.pop(CONF_SHOW_ADV_OPT, False):
+                self._adv_chk = True
                 self._std_options = user_input
                 return await self.async_step_menu()
             return self._save_entry(data=user_input)
@@ -496,7 +495,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     vol.Required(
                         CONF_APP_LOAD_METHOD,
                         default=options.get(
-                            CONF_APP_LOAD_METHOD, str(AppLoadMethod.Default.value)
+                            CONF_APP_LOAD_METHOD, str(AppLoadMethod.All.value)
                         ),
                     ): SelectSelector(_dict_to_select(APP_LOAD_METHODS)),
                 }
@@ -532,9 +531,10 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
         else:
             data_schema = vol.Schema(opt_schema)
 
-        data_schema = data_schema.extend(
-            {vol.Required(CONF_SHOW_ADV_OPT, default=False): bool}
-        )
+        if not self._adv_chk:
+            data_schema = data_schema.extend(
+                {vol.Required(CONF_SHOW_ADV_OPT, default=False): bool}
+            )
 
         return self.async_show_form(step_id="init", data_schema=data_schema)
 
@@ -547,8 +547,8 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 "app_list",
                 "channel_list",
                 "sync_ent",
-                "adv_opt",
                 "init",
+                "adv_opt",
                 "save_exit",
             ],
         )
@@ -675,10 +675,6 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                     default=min(options.get(CONF_WOL_REPEAT, 1), MAX_WOL_REPEAT),
                 ): vol.All(vol.Coerce(int), vol.Clamp(min=1, max=MAX_WOL_REPEAT)),
                 vol.Required(
-                    CONF_POWER_ON_DELAY,
-                    default=options.get(CONF_POWER_ON_DELAY, DEFAULT_POWER_ON_DELAY),
-                ): vol.All(vol.Coerce(int), vol.Clamp(min=0, max=60)),
-                vol.Required(
                     CONF_PING_PORT, default=options.get(CONF_PING_PORT, 0)
                 ): vol.All(vol.Coerce(int), vol.Clamp(min=0, max=65535)),
                 vol.Optional(
@@ -689,7 +685,7 @@ class OptionsFlowHandler(config_entries.OptionsFlow):
                 ): EntitySelector(select_entities),
                 vol.Required(
                     CONF_USE_MUTE_CHECK,
-                    default=options.get(CONF_USE_MUTE_CHECK, True),
+                    default=options.get(CONF_USE_MUTE_CHECK, False),
                 ): bool,
                 vol.Required(
                     CONF_DUMP_APPS,
