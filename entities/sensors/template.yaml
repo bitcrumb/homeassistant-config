@@ -1,6 +1,6 @@
 ---
 # DEPRECATED
-# New template sensors should be added to`integrateions/template.yaml`
+# New template sensors should be added to`integrations/template.yaml`
 #
 # The template platform supports sensors which get their values from other entities.
 #

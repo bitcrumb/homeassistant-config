@@ -6,7 +6,7 @@
 - platform: group
   name: "Lode Devices"
   services:
-    - service: mobile_app_iphone_12_pro_max_lode
+    - service: mobile_app_iphone_14_pro
     - service: mobile_app_macbook_pro_lode
 
 - platform: group
@@ -17,7 +17,7 @@
 - platform: group
   name: "Parents Devices"
   services:
-    - service: mobile_app_iphone_12_pro_max_lode
+    - service: mobile_app_iphone_14_pro
     - service: mobile_app_macbook_pro_lode
     - service: mobile_app_iphone_13_ellen
 

@@ -1,5 +1,5 @@
 - id: '1617306583108'
-  name: Netflix & chill
+  name: Netflix
   entities:
     media_player.samsung_tv:
       volume_level: 0.11

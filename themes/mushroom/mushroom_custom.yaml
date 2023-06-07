@@ -1,0 +1,7 @@
+Mushroom Custom:
+    mush-chip-height: 38px
+    mush-chip-font-size: 0.35em
+    mush-chip-icon-size: 0.6em
+    modes:
+        light: {}
+        dark: {}

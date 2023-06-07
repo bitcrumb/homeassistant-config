@@ -1,18 +1,360 @@
 - id: '1634314424982'
-  name: Zonnewering inklappen
+  name: Fold sun protection
   entities:
     cover.awning:
-      current_position: 100
+      current_position: 0
       device_class: awning
-      icon: mdi:storefront-outline
+      icon: mdi:awning-outline
       friendly_name: Awning
       supported_features: 15
-      state: open
+      state: closed
     cover.screen:
       current_position: 100
       device_class: blind
-      icon: hass:blinds
+      icon: mdi:window-closed
       friendly_name: Screen
       supported_features: 15
       state: open
   icon: mdi:blinds-open
+  metadata: {}
+- id: '1672954969603'
+  name: Youtube
+  entities:
+    media_player.samsung_tv:
+      source_list:
+      - TV
+      - HDMI
+      - YouTube
+      - Disney+
+      - Streamz
+      - Netflix
+      - Spotify - muziek en podcasts
+      - Steam Link
+      - Prime Video
+      - Screens on fire
+      - Internet
+      - Rakuten TV
+      - Facebook Watch
+      - LEGO® TV
+      - e-Manual
+      - Eurosport
+      - Google Play Films & TV
+      - Red Bull TV
+      - meJane
+      - Smart IPTV
+      - Deezer
+      - Plex
+      - McAfee Security for TV
+      - Eleven Belgium
+      - TED
+      - TuneIn
+      - TV VLAANDEREN
+      - TÉLÉSAT
+      - Privacyvoorkeuren
+      - VTM GO
+      - Apple TV+
+      device_class: tv
+      icon: mdi:television
+      friendly_name: Samsung TV
+      supported_features: 155581
+      ip_address: 192.168.1.11
+      volume_level: 0.04
+      is_volume_muted: false
+      media_content_type: app
+      app_id: 9Ur5IzDKqV.TizenYouTube
+      source: YouTube
+      state: 'on'
+    light.tv_spots:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 240
+      - 100
+      rgb_color:
+      - 0
+      - 0
+      - 255
+      xy_color:
+      - 0.136
+      - 0.04
+      entity_id:
+      - light.led_tv_left
+      - light.led_tv_center
+      - light.led_tv_right
+      icon: mdi:lightbulb-group
+      friendly_name: TV Wall
+      supported_features: 0
+      state: 'on'
+    light.led_strip_tv:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 360
+      - 100
+      rgb_color:
+      - 255
+      - 0
+      - 0
+      xy_color:
+      - 0.701
+      - 0.299
+      icon: mdi:led-strip-variant
+      friendly_name: TV Strip
+      supported_features: 0
+      state: 'on'
+  icon: mdi:youtube
+  metadata:
+    media_player.samsung_tv:
+      entity_only: true
+    light.tv_spots:
+      entity_only: true
+    light.led_strip_tv:
+      entity_only: true
+- id: '1672990782081'
+  name: Morning
+  entities:
+    light.tv_spots:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 240
+      - 100
+      rgb_color:
+      - 0
+      - 0
+      - 255
+      xy_color:
+      - 0.136
+      - 0.04
+      entity_id:
+      - light.led_tv_left
+      - light.led_tv_center
+      - light.led_tv_right
+      icon: mdi:lightbulb-group
+      friendly_name: TV
+      supported_features: 0
+      state: 'on'
+    light.led_strip_tv:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 255
+      - 100
+      rgb_color:
+      - 63
+      - 0
+      - 255
+      xy_color:
+      - 0.157
+      - 0.05
+      icon: mdi:led-strip-variant
+      friendly_name: TV LED Strip
+      supported_features: 0
+      state: 'on'
+    light.led_office_wall_left:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 240
+      - 100
+      rgb_color:
+      - 0
+      - 0
+      - 255
+      xy_color:
+      - 0.136
+      - 0.04
+      friendly_name: LED Office Wall (Left)
+      supported_features: 0
+      state: 'on'
+    light.led_office_wall_right:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      hs_color:
+      - 315
+      - 100
+      rgb_color:
+      - 255
+      - 0
+      - 191
+      xy_color:
+      - 0.477
+      - 0.196
+      friendly_name: LED Office Wall (Right)
+      supported_features: 0
+      state: 'on'
+    light.kitchen_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      entity_id:
+      - light.led_kitchen_left
+      - light.led_kitchen_right
+      icon: mdi:globe-light-outline
+      friendly_name: Kitchen
+      supported_features: 0
+      state: 'off'
+    light.fridge_lights:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      color_mode: color_temp
+      brightness: 135
+      color_temp_kelvin: 2000
+      color_temp: 500
+      hs_color:
+      - 30.601
+      - 94.547
+      rgb_color:
+      - 255
+      - 136
+      - 13
+      xy_color:
+      - 0.599
+      - 0.382
+      entity_id:
+      - light.led_fridge_left
+      - light.led_fridge_right
+      icon: mdi:spotlight-beam
+      friendly_name: Fridge
+      supported_features: 0
+      state: 'on'
+    light.office_desk:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      entity_id:
+      - light.led_office_desk_left
+      - light.led_office_desk_center
+      - light.led_office_desk_right
+      icon: mdi:spotlight-beam
+      friendly_name: Office Desk
+      supported_features: 0
+      state: 'off'
+  icon: mdi:weather-sunset-up
+  metadata:
+    light.tv_spots:
+      entity_only: true
+    light.led_strip_tv:
+      entity_only: true
+    light.led_office_wall_left:
+      entity_only: true
+    light.led_office_wall_right:
+      entity_only: true
+    light.kitchen_lights:
+      entity_only: true
+    light.fridge_lights:
+      entity_only: true
+    light.office_desk:
+      entity_only: true
+- id: '1673081255396'
+  name: PlayStation
+  entities:
+    media_player.samsung_tv:
+      source_list:
+      - TV
+      - HDMI
+      - YouTube
+      - Disney+
+      - Streamz
+      - Netflix
+      - Spotify - muziek en podcasts
+      - Steam Link
+      - Prime Video
+      - Screens on fire
+      - Internet
+      - Rakuten TV
+      - Facebook Watch
+      - LEGO® TV
+      - e-Manual
+      - Eurosport
+      - Google Play Films & TV
+      - Red Bull TV
+      - meJane
+      - Smart IPTV
+      - Deezer
+      - Plex
+      - McAfee Security for TV
+      - Eleven Belgium
+      - TED
+      - TuneIn
+      - TV VLAANDEREN
+      - TÉLÉSAT
+      - Privacyvoorkeuren
+      - VTM GO
+      - Apple TV+
+      device_class: tv
+      icon: mdi:television
+      friendly_name: Samsung TV
+      supported_features: 155581
+      ip_address: 192.168.1.11
+      volume_level: 0.04
+      is_volume_muted: false
+      media_content_type: video
+      app_id: TV/HDMI
+      source: TV/HDMI
+      state: 'on'
+  icon: mdi:sony-playstation
+  metadata:
+    media_player.samsung_tv:
+      entity_only: true

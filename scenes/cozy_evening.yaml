@@ -1,5 +1,5 @@
 - id: '1616934212663'
-  name: Cozy Evening
+  name: Evening
   entities:
     media_player.living_room:
       volume_level: 0.16

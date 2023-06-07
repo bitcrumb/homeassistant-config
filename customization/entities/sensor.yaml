@@ -42,8 +42,6 @@ sensor.public_ip_address:
   friendly_name: Public IPv4
 sensor.uptime:
   icon: mdi:update
-sensor.kitchen_temperature:
-  friendly_name: Kitchen temperature
 sensor.home_work:
   icon: mdi:highway
 sensor.home_school:

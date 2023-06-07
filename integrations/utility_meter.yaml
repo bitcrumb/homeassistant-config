@@ -5,92 +5,82 @@
 # https://www.home-assistant.io/integrations/utility_meter/
 #
 utility_meter:
-#   energy_buy_daily:
-#     source: sensor.energy_buy_sum
-#     cycle: daily
-#   energy_buy_monthly:
-#     source: sensor.energy_buy_sum
-#     cycle: monthly
-#   energy_sell_daily:
-#     source: sensor.energy_sell_sum
-#     cycle: daily
-#   energy_sell_monthly:
-#     source: sensor.energy_sell_sum
-#     cycle: monthly
-#   house_consumption_daily:
-#     source: sensor.house_consumption_sum
-#     cycle: daily
-#   house_consumption_monthly:
-#     source: sensor.house_consumption_sum
-#     cycle: monthly
+  #   energy_buy_daily:
+  #     source: sensor.energy_buy_sum
+  #     cycle: daily
+  #   energy_buy_monthly:
+  #     source: sensor.energy_buy_sum
+  #     cycle: monthly
+  #   energy_sell_daily:
+  #     source: sensor.energy_sell_sum
+  #     cycle: daily
+  #   energy_sell_monthly:
+  #     source: sensor.energy_sell_sum
+  #     cycle: monthly
+  #   house_consumption_daily:
+  #     source: sensor.house_consumption_sum
+  #     cycle: daily
+  #   house_consumption_monthly:
+  #     source: sensor.house_consumption_sum
+  #     cycle: monthly
 
-# Smart plugs
-  smart_plug_fridge_consumption_yearly:
-    source: sensor.smart_plug_fridge_energy
-    cycle: yearly
-  smart_plug_fridge_consumption_monthly:
-    source: sensor.smart_plug_fridge_energy
-    cycle: monthly
-  smart_plug_fridge_consumption_daily:
-    source: sensor.smart_plug_fridge_energy
-    cycle: daily
+  # Smart plugs
+  # smart_plug_fridge_consumption_yearly:
+  #   source: sensor.smart_plug_fridge_energy
+  #   cycle: yearly
+  # smart_plug_fridge_consumption_monthly:
+  #   source: sensor.smart_plug_fridge_energy
+  #   cycle: monthly
+  # smart_plug_fridge_consumption_daily:
+  #   source: sensor.smart_plug_fridge_energy
+  #   cycle: daily
 
-  smart_plug_office_consumption_yearly:
-    source: sensor.smart_plug_office_energy
-    cycle: yearly
-  smart_plug_office_consumption_monthly:
-    source: sensor.smart_plug_office_energy
-    cycle: monthly
-  smart_plug_office_consumption_daily:
-    source: sensor.smart_plug_office_energy
-    cycle: daily
+  # smart_plug_office_consumption_yearly:
+  #   source: sensor.smart_plug_office_energy
+  #   cycle: yearly
+  # smart_plug_office_consumption_monthly:
+  #   source: sensor.smart_plug_office_energy
+  #   cycle: monthly
+  # smart_plug_office_consumption_daily:
+  #   source: sensor.smart_plug_office_energy
+  #   cycle: daily
 
-  smart_plug_dishwasher_consumption_yearly:
-    source: sensor.smart_plug_dishwasher_energy
-    cycle: yearly
-  smart_plug_dishwasher_consumption_monthly:
-    source: sensor.smart_plug_dishwasher_energy
-    cycle: monthly
-  smart_plug_dishwasher_consumption_daily:
-    source: sensor.smart_plug_dishwasher_energy
-    cycle: daily
+  # smart_plug_dishwasher_consumption_yearly:
+  #   source: sensor.smart_plug_dishwasher_energy
+  #   cycle: yearly
+  # smart_plug_dishwasher_consumption_monthly:
+  #   source: sensor.smart_plug_dishwasher_energy
+  #   cycle: monthly
+  # smart_plug_dishwasher_consumption_daily:
+  #   source: sensor.smart_plug_dishwasher_energy
+  #   cycle: daily
 
-  smart_plug_freezer_consumption_yearly:
-    source: sensor.smart_plug_freezer_energy
-    cycle: yearly
-  smart_plug_freezer_consumption_monthly:
-    source: sensor.smart_plug_freezer_energy
-    cycle: monthly
-  smart_plug_freezer_consumption_daily:
-    source: sensor.smart_plug_freezer_energy
-    cycle: daily
+  # smart_plug_freezer_consumption_yearly:
+  #   source: sensor.smart_plug_freezer_energy
+  #   cycle: yearly
+  # smart_plug_freezer_consumption_monthly:
+  #   source: sensor.smart_plug_freezer_energy
+  #   cycle: monthly
+  # smart_plug_freezer_consumption_daily:
+  #   source: sensor.smart_plug_freezer_energy
+  #   cycle: daily
 
-  smart_plug_washer_consumption_yearly:
-    source: sensor.smart_plug_washer_energy
-    cycle: yearly
-  smart_plug_washer_consumption_monthly:
-    source: sensor.smart_plug_washer_energy
-    cycle: monthly
-  smart_plug_washer_consumption_daily:
-    source: sensor.smart_plug_washer_energy
-    cycle: daily
+  # smart_plug_washer_consumption_yearly:
+  #   source: sensor.smart_plug_washer_energy
+  #   cycle: yearly
+  # smart_plug_washer_consumption_monthly:
+  #   source: sensor.smart_plug_washer_energy
+  #   cycle: monthly
+  # smart_plug_washer_consumption_daily:
+  #   source: sensor.smart_plug_washer_energy
+  #   cycle: daily
 
-  smart_plug_dryer_consumption_yearly:
-    source: sensor.smart_plug_dryer_energy
-    cycle: yearly
-  smart_plug_dryer_consumption_monthly:
-    source: sensor.smart_plug_dryer_energy
-    cycle: monthly
-  smart_plug_dryer_consumption_daily:
-    source: sensor.smart_plug_dryer_energy
-    cycle: daily
-
-  smart_plug_heat_pump_consumption_yearly:
-    source: sensor.smart_plug_heat_pump_energy
-    cycle: yearly
-  smart_plug_heat_pump_consumption_monthly:
-    source: sensor.smart_plug_heat_pump_energy
-    cycle: monthly
-  smart_plug_heat_pump_consumption_daily:
-    source: sensor.smart_plug_heat_pump_energy
-    cycle: daily
+  # smart_plug_dryer_consumption_yearly:
+  #   source: sensor.smart_plug_dryer_energy
+  #   cycle: yearly
+  # smart_plug_dryer_consumption_monthly:
+  #   source: sensor.smart_plug_dryer_energy
+  #   cycle: monthly
+  # smart_plug_dryer_consumption_daily:
+  #   source: sensor.smart_plug_dryer_energy
+  #   cycle: daily

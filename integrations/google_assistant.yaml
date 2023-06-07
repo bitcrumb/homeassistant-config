@@ -9,40 +9,44 @@ google_assistant:
   report_state: true
   expose_by_default: false
   # exposed_domains:
-  #   - switch
-  #   - light
-  #   - sensor
-  #   - script
-  #   - scene
-  #   - group
-  #   - input_boolean
-  #   - media_player
-  #   - fan
-  #   - lock
-  #   - device_tracker
-  #   - climate
-  #   - remote
-  #   - automation
+  #   - alarm_control_panel
   #   - camera
+  #   - cover
+  #   - climate
+  #   - fan
+  #   - group
+  #   - humidifier
+  #   - input_boolean
+  #   - input_select
+  #   - light
+  #   - lock
+  #   - media_player
+  #   - scene
+  #   - script
+  #   - sensor
+  #   - switch
+  #   - vacuum
   entity_config:
-    light.tv_spots:
-      name: 'Spots TV'
-    light.tv_led_strip:
-      name: 'LED Strip TV'
-    light.led_strip_juna:
-      name: 'LED Strip Juna'
-    light.led_strip_otis:
-      name: 'LED Strip Otis'
-    light.fridge_lights:
-      name: 'Frigo'
-    light.office_ceiling_lights:
-      name: 'Kantoor bureay'
-    light.office_wall_lights:
-      name: 'Kantoor muur'
-    light.office_mood_light:
-      name: 'Kantoor sfeerlicht'
-    light.kitchen_lights:
-      name: 'Keuken lichten'
+    media_player.samsung_tv:
+      name: 'Samsung TV'
+    # light.tv_spots:
+    #   name: 'Spots TV'
+    # light.tv_led_strip:
+    #   name: 'LED Strip TV'
+    # light.led_strip_juna:
+    #   name: 'LED Strip Juna'
+    # light.led_strip_otis:
+    #   name: 'LED Strip Otis'
+    # light.fridge_lights:
+    #   name: 'Frigo'
+    # light.office_ceiling_lights:
+    #   name: 'Kantoor bureau'
+    # light.office_wall_lights:
+    #   name: 'Kantoor muur'
+    # light.office_mood_light:
+    #   name: 'Kantoor sfeerlicht'
+    # light.kitchen_lights:
+    #   name: 'Keuken lichten'
     # cover.awning:
     #   name: "Luifel"
     # cover.screen:

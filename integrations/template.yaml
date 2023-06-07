@@ -48,3 +48,14 @@ template:
             state_attr('sensor.smart_plug_washer_energy', 'power') | float
             ) | round(3)
           }}
+
+  - trigger:
+      platform: state
+      entity_id:
+        - binary_sensor.tapo_camera_motion
+      to: 'on'
+    binary_sensor:
+      - name: Motion detected in living room (with occupancy timeout)
+        unique_id: motion_detected_living_room
+        state: 'on'
+        auto_off: '00:05:00'

@@ -81,9 +81,14 @@
   description: ''
   trigger:
   - platform: state
-    entity_id: binary_sensor.no_one_home
+    entity_id:
+    - binary_sensor.no_one_home
     from: 'off'
     to: 'on'
+    for:
+      hours: 0
+      minutes: 30
+      seconds: 0
   condition:
   - condition: state
     entity_id: cover.awning
@@ -153,6 +158,10 @@
     - light.led_office_wall_left
     - light.led_office_wall_right
     - light.led_office_mood
+    - light.led_strip_otis
+    - light.led_strip_juna
+    - light.led_kitchen_right
+    - light.led_kitchen_left
     to: unavailable
     for:
       minutes: 5
@@ -243,19 +252,6 @@
     target:
       entity_id: switch.tapo_camera_privacy
   mode: single
-- id: '1639753919191'
-  alias: Fix - Reload Tuya Integration
-  description: ''
-  trigger:
-  - platform: time_pattern
-    minutes: '01'
-    seconds: '01'
-  condition: []
-  action:
-  - service: homeassistant.reload_config_entry
-    target:
-      device_id: 6819358ab1f648037f06de44e0ef8491
-  mode: single
 - id: '1650973895443'
   alias: "\U0001F699 Ellen leaves from work"
   description: ''
@@ -295,12 +291,12 @@
       title: "\U0001F32C Luifel gesloten door wind"
   mode: single
 - id: '1657790977221'
-  alias: ⛱ ☀️ Open awning when luminance exceeds 30000 and not windy and before 16h00
+  alias: ⛱ ☀️ Open awning when too bright sunlight and not windy and before 15h30
   description: ''
   trigger:
   - platform: numeric_state
     entity_id: sensor.outdoor_luminance
-    above: '30000'
+    above: 70000
   - platform: time
     at: 08:15:00
   condition:
@@ -312,7 +308,7 @@
     state: closed
     entity_id: cover.awning
   - condition: time
-    before: '16:00:00'
+    before: '15:30:00'
   action:
   - service: cover.set_cover_position
     data:
@@ -326,12 +322,12 @@
       title: ⛱ Luifel wordt geopend
   mode: single
 - id: '1657791504056'
-  alias: ⛱ ☀️ Close screen when luminance exceeds 40000
+  alias: ⛱ ☀️ Close screen when too bright sunlight
   description: ''
   trigger:
   - platform: numeric_state
     entity_id: sensor.outdoor_luminance
-    above: 40000
+    above: 50000
   condition:
   - condition: state
     entity_id: cover.screen
@@ -368,11 +364,11 @@
       message: Screen wordt automatisch geopend omdat het avond is.
   mode: single
 - id: '1657793011369'
-  alias: ⛱ ⏱ Close awning at 16h00
+  alias: ⛱ ⏱ Close awning at 15h30
   description: ''
   trigger:
   - platform: time
-    at: '16:00:00'
+    at: '15:30:00'
   condition:
   - condition: state
     entity_id: cover.awning
@@ -386,32 +382,6 @@
     data:
       title: ⛱ Luifel gesloten (schaduw)
       message: Luifel wordt wordt automatisch gesloten omdat er genoeg schaduw is.
-  mode: single
-- id: '1663489026378'
-  alias: "\U0001F50C\U0001F534 Switch off office devices at night"
-  description: ''
-  trigger:
-  - platform: time
-    at: 00:00:00
-  condition: []
-  action:
-  - service: switch.turn_off
-    data: {}
-    target:
-      entity_id: switch.smart_plug_office
-  mode: single
-- id: '1663489310156'
-  alias: "\U0001F50C\U0001F7E2 Switch on office devices in the morning"
-  description: ''
-  trigger:
-  - platform: time
-    at: 06:00:00
-  condition: []
-  action:
-  - service: switch.turn_on
-    data: {}
-    target:
-      entity_id: switch.smart_plug_office
   mode: single
 - id: '1663504824526'
   alias: ☀️⚡️⬆️ Upload solar panel production to EnergyID
@@ -572,24 +542,63 @@
       target_entity: light.fridge_lights
       illuminance_sensor: sensor.luminance_sensor_luminance
       illuminance_cutoff: input_number.luminance_threshold
-- id: '1667762237876'
-  alias: Raspberry Pi 4 Alerts (BE)
+- id: '1673022556063'
+  alias: Wake up iPad Mini when motion detected
   description: ''
-  use_blueprint:
-    path: giqcass/rpilocator-notification-blueprint.yaml
-    input:
-      zero_2_w: --NO--
-      notify_device: 6c73da0af7acff5576126d44fa3c27f7
-      country_code: Stock Alert (BE)
-      pi4: RPi 4
-- id: '1667762256346'
-  alias: Raspberry Pi 4 Alerts (NL)
+  trigger:
+  - platform: state
+    entity_id:
+    - binary_sensor.motion_detected_in_living_room
+    to: 'on'
+  condition:
+  - condition: state
+    entity_id: binary_sensor.no_one_home
+    state: 'off'
+  action:
+  - service: notify.mobile_app_ipad_mini_otis
+    data:
+      title: Wake up!
+      message: Waking you up, since motion was detected.
+  mode: single
+- id: '1673380802036'
+  alias: Set dark theme when sun sets
   description: ''
-  use_blueprint:
-    path: giqcass/rpilocator-notification-blueprint.yaml
-    input:
-      zero_2_w: --NO--
-      notify_device: 6c73da0af7acff5576126d44fa3c27f7
-      country_code: Stock Alert (NL)
-      pi4: RPi 4
-      cm4_mmc: MMC
+  trigger:
+  - platform: sun
+    event: sunset
+  condition: []
+  action:
+  - service: frontend.set_theme
+    data:
+      mode: dark
+      name: Mushroom Custom
+  mode: single
+- id: '1673380823820'
+  alias: Set light theme when sun rises
+  description: ''
+  trigger:
+  - platform: sun
+    event: sunrise
+  condition: []
+  action:
+  - service: frontend.set_theme
+    data:
+      mode: light
+      name: Mushroom Custom
+  mode: single
+- id: '1684871922041'
+  alias: "\U0001F440 Send notification when privacy mode off"
+  description: ''
+  trigger:
+  - platform: state
+    entity_id:
+    - switch.tapo_camera_privacy
+    from: 'on'
+    to: 'off'
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      message: Privacy mode of the Tapo webcam was disabled.
+      title: "\U0001F440 Privacy mode disabled"
+  mode: single

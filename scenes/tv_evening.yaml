@@ -1,5 +1,5 @@
 - id: '1616835830496'
-  name: TV evening
+  name: TV
   entities:
     light.tv_led_strip:
       min_mireds: 153
