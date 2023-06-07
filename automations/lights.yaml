@@ -9,7 +9,7 @@
     to: 'on'
   condition: []
   action:
-  - service: notify.mobile_app_iphone_12_pro_max_lode
+  - service: notify.lode_devices
     data:
       message: Nobody at home
       title: Turning off all lights
@@ -31,7 +31,6 @@
   action:
   - scene: scene.tv_avond
   mode: single
-
 - id: '1617000158066'
   alias: 💡 Turn off the lights an hour after sunrise
   description: ''
