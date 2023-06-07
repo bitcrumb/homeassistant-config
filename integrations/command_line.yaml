@@ -1,22 +1,21 @@
+---
+# The command_line offers functionality that issues specific commands to get
+# data or to control a device.
+#
+# https://www.home-assistant.io/integrations/command_line
+#
 command_line:
-  - binary_sensor:
-    command: python3 -c "import requests; import json; import random; dataRequest = requests.get('https://cdn-secure.buienalarm.nl/api/3.4/forecast.php?lat={{state_attr("zone.home", "latitude") | round(2)}}&lon={{state_attr("zone.home", "longitude") | round(2)}}&region=nl&unit=mm%2Fu&c='+str(random.randint(0,999999999999999)) ).text; dataRequest = dataRequest.replace('\r\n',' '); data = '{\"data\":'+dataRequest+'}';    print(data);"
-    name: Neerslag Buienalarm Regen Data
-    json_attributes:
-      - data
-    value_template: "last_changed: {{states.sensor.neerslag_buienalarm_regen_data.last_changed}}"
-    scan_interval: 240
-  - binary_sensor:
-    command: python3 -c "import requests; import json; import random; dataRequest = requests.get('https://gpsgadget.buienradar.nl/data/raintext?lat={{state_attr("zone.home", "latitude") | round(2)}}&lon={{state_attr("zone.home", "longitude") | round(2)}}&c='+str(random.randint(0,999999999999999)) ).text; dataRequest = dataRequest.replace('\r\n',' '); data = '{\"data\":\"'+dataRequest+'\"}';    print(data);"
-    name: Neerslag Buienradar Regen Data
-    json_attributes:
-      - data
-    value_template: "last_changed: {{states.sensor.neerslag_buienradar_regen_data.last_changed}}"
-    scan_interval: 240
-  - binary_sensor:
-    command: python3 -c "import requests; import json; import random; dataRequest = requests.get('https://gpsgadget.buienradar.nl/data/raintext?lat={{state_attr("zone.home", "latitude") | round(2)}}&lon={{state_attr("zone.home", "longitude") | round(2)}}&c='+str(random.randint(0,999999999999999)) ).text; dataRequest = dataRequest.replace('\r\n',' '); data = '{\"data\":\"'+dataRequest+'\"}';    print(data);"
-    name: Neerslag Buienradar Regen Data
-    json_attributes:
-      - data
-    value_template: "last_changed: {{states.sensor.neerslag_buienradar_regen_data.last_changed}}"
-    scan_interval: 240
+  - sensor:
+      command: python3 -c "import requests; import json; import random; dataRequest = requests.get('https://cdn-secure.buienalarm.nl/api/3.4/forecast.php?lat={{state_attr("zone.home", "latitude") | round(2)}}&lon={{state_attr("zone.home", "longitude") | round(2)}}&region=nl&unit=mm%2Fu&c='+str(random.randint(0,999999999999999)) ).text; dataRequest = dataRequest.replace('\r\n',' '); data = '{\"data\":'+dataRequest+'}';    print(data);"
+      name: Neerslag Buienalarm Regen Data
+      json_attributes:
+        - data
+      value_template: "last_changed: {{states.sensor.neerslag_buienalarm_regen_data.last_changed}}"
+      scan_interval: 240
+  - sensor:
+      command: python3 -c "import requests; import json; import random; dataRequest = requests.get('https://gpsgadget.buienradar.nl/data/raintext?lat={{state_attr("zone.home", "latitude") | round(2)}}&lon={{state_attr("zone.home", "longitude") | round(2)}}&c='+str(random.randint(0,999999999999999)) ).text; dataRequest = dataRequest.replace('\r\n',' '); data = '{\"data\":\"'+dataRequest+'\"}';    print(data);"
+      name: Neerslag Buienradar Regen Data
+      json_attributes:
+        - data
+      value_template: "last_changed: {{states.sensor.neerslag_buienradar_regen_data.last_changed}}"
+      scan_interval: 240
