@@ -7,7 +7,7 @@
 - platform: google_translate
 
   # Set the default voice language.
-  language: 'en'
+  language: "en"
 
   # Cache voice files to a local storage.
   cache: true

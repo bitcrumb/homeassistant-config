@@ -6,19 +6,19 @@
 mqtt:
   sensor:
     - name: Zigbee2MQTT Bridge state
-      state_topic: 'zigbee2mqtt/bridge/state'
+      state_topic: "zigbee2mqtt/bridge/state"
       icon: mdi:router-wireless
     - name: Zigbee2MQTT Version
-      state_topic: 'zigbee2mqtt/bridge/config'
-      value_template: '{{ value_json.version }}'
+      state_topic: "zigbee2mqtt/bridge/config"
+      value_template: "{{ value_json.version }}"
       icon: mdi:zigbee
     - name: Zigbee2MQTT Coordinator Version
-      state_topic: 'zigbee2mqtt/bridge/config'
-      value_template: '{{ value_json.coordinator }}'
+      state_topic: "zigbee2mqtt/bridge/config"
+      value_template: "{{ value_json.coordinator }}"
       icon: mdi:chip
     - name: Zigbee2MQTT Networkmap
       icon: mdi:lan-pending
-      state_topic: 'zigbee2mqtt/bridge/networkmap/raw'
+      state_topic: "zigbee2mqtt/bridge/networkmap/raw"
       value_template: >-
         {{ now().strftime('%Y-%m-%d %H:%M:%S') }}
-      json_attributes_topic: 'zigbee2mqtt/bridge/networkmap/raw'
+      json_attributes_topic: "zigbee2mqtt/bridge/networkmap/raw"

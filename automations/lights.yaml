@@ -1,44 +1,44 @@
 ---
-- id: '1617480044723'
+- id: "1617480044723"
   alias: 💡 Turn off the lights when nobody home
-  description: ''
+  description: ""
   trigger:
-  - platform: state
-    entity_id: binary_sensor.no_one_home
-    from: 'off'
-    to: 'on'
-  condition: []
-  action:
-  - service: notify.lode_devices
-    data:
-      message: Nobody at home
-      title: Turning off all lights
-  - scene: scene.all_lights_off
-  mode: single
-- id: '1616704973166'
-  alias: 💡 Turn on the evening lights when the sun is set
-  description: ''
-  trigger:
-  - platform: sun
-    event: sunset
-    offset: '+1'
-  condition:
-  - condition: not
-    conditions:
-    - condition: state
+    - platform: state
       entity_id: binary_sensor.no_one_home
-      state: 'on'
-  action:
-  - scene: scene.tv_avond
-  mode: single
-- id: '1617000158066'
-  alias: 💡 Turn off the lights an hour after sunrise
-  description: ''
-  trigger:
-  - platform: sun
-    event: sunrise
-    offset: +01:00:00
+      from: "off"
+      to: "on"
   condition: []
   action:
-  - scene: scene.all_lights_off
+    - service: notify.lode_devices
+      data:
+        message: Nobody at home
+        title: Turning off all lights
+    - scene: scene.all_lights_off
+  mode: single
+- id: "1616704973166"
+  alias: 💡 Turn on the evening lights when the sun is set
+  description: ""
+  trigger:
+    - platform: sun
+      event: sunset
+      offset: "+1"
+  condition:
+    - condition: not
+      conditions:
+        - condition: state
+          entity_id: binary_sensor.no_one_home
+          state: "on"
+  action:
+    - scene: scene.tv_avond
+  mode: single
+- id: "1617000158066"
+  alias: 💡 Turn off the lights an hour after sunrise
+  description: ""
+  trigger:
+    - platform: sun
+      event: sunrise
+      offset: +01:00:00
+  condition: []
+  action:
+    - scene: scene.all_lights_off
   mode: single

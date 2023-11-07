@@ -28,7 +28,7 @@ google_assistant:
   #   - vacuum
   entity_config:
     media_player.samsung_tv:
-      name: 'Samsung TV'
+      name: "Samsung TV"
     # light.tv_spots:
     #   name: 'Spots TV'
     # light.tv_led_strip:

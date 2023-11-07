@@ -1,4 +1,4 @@
-- id: '1617306583108'
+- id: "1617306583108"
   name: Netflix
   entities:
     media_player.samsung_tv:
@@ -8,37 +8,37 @@
       media_title: Netflix
       app_id: RN1MCdNq8t.Netflix
       source: Netflix
-      state: 'on'
-    light.tv_led_strip:
+      state: "on"
+    light.led_strip_tv:
       min_mireds: 153
       max_mireds: 370
       brightness: 1
       color_temp: 83
       hs_color:
-      - 360
-      - 100
+        - 360
+        - 100
       rgb_color:
-      - 255
-      - 0
-      - 0
+        - 255
+        - 0
+        - 0
       xy_color:
-      - 0.701
-      - 0.299
-      state: 'on'
+        - 0.701
+        - 0.299
+      state: "on"
     light.tv_spots:
       min_mireds: 153
       max_mireds: 370
       brightness: 1
       color_temp: 320
       hs_color:
-      - 360
-      - 100
+        - 360
+        - 100
       rgb_color:
-      - 255
-      - 0
-      - 0
+        - 255
+        - 0
+        - 0
       xy_color:
-      - 0.701
-      - 0.299
-      state: 'on'
+        - 0.701
+        - 0.299
+      state: "on"
   icon: mdi:netflix

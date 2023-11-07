@@ -1,12 +1,12 @@
 ---
 - id: spotify_device_selected
-  alias: '🔉 Cast Spotify to selected device'
-  description: 'Starts music playing on the selected Chromecast Audio device'
+  alias: "🔉 Cast Spotify to selected device"
+  description: "Starts music playing on the selected Chromecast Audio device"
   trigger:
-  - platform: state
-    entity_id: input_select.chromecast_audio
+    - platform: state
+      entity_id: input_select.chromecast_audio
   condition: []
   action:
-  - service: script.turn_on
-    entity_id: script.spotify_start
+    - service: script.turn_on
+      entity_id: script.spotify_start
   mode: single

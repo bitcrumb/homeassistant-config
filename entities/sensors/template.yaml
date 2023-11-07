@@ -13,51 +13,51 @@
   sensors:
     inverter_pv_power_output:
       value_template: "{{ state_attr('sensor.inverter_solar', 'outputpower') }}"
-      unit_of_measurement: 'W'
-      friendly_name: 'PV Power output'
+      unit_of_measurement: "W"
+      friendly_name: "PV Power output"
     inverter_pv_temperature:
       value_template: "{{ state_attr('sensor.inverter_solar', 'tempperature') }}"
-      unit_of_measurement: 'C'
-      friendly_name: 'PV Temperature'
+      unit_of_measurement: "C"
+      friendly_name: "PV Temperature"
     inverter_pv_eday:
       value_template: "{{ state_attr('sensor.inverter_solar', 'eday') }}"
-      unit_of_measurement: 'kWh'
-      friendly_name: 'PV energy day'
+      unit_of_measurement: "kWh"
+      friendly_name: "PV energy day"
     inverter_pv_etotal:
       value_template: "{{ state_attr('sensor.inverter_solar', 'etotal') }}"
-      unit_of_measurement: 'kWh'
-      friendly_name: 'PV energy total'
+      unit_of_measurement: "kWh"
+      friendly_name: "PV energy total"
     inverter_pv_iday:
       value_template: "{{ state_attr('sensor.inverter_solar', 'iday') }}"
-      unit_of_measurement: '€'
-      friendly_name: 'PV income day'
+      unit_of_measurement: "€"
+      friendly_name: "PV income day"
     inverter_pv_itotal:
       value_template: "{{ state_attr('sensor.inverter_solar', 'itotal') }}"
-      unit_of_measurement: '€'
-      friendly_name: 'PV income total'
+      unit_of_measurement: "€"
+      friendly_name: "PV income total"
     inverter_pv_excess:
       value_template: "{{ state_attr('sensor.inverter_solar', 'pmeter') }}"
-      unit_of_measurement: 'W'
-      friendly_name: 'PV spare'
+      unit_of_measurement: "W"
+      friendly_name: "PV spare"
     inverter_pv_soc:
       value_template: "{{ state_attr('sensor.inverter_solar', 'soc') }}"
-      unit_of_measurement: '%'
-      friendly_name: 'PV Battery power'
+      unit_of_measurement: "%"
+      friendly_name: "PV Battery power"
     inverter_pv_etotal_last_month:
       value_template: "{{ state_attr('sensor.inverter_solar', 'lastmonthetotle') }}"
-      unit_of_measurement: 'kWh'
-      friendly_name: 'PV energy last month'
+      unit_of_measurement: "kWh"
+      friendly_name: "PV energy last month"
     inverter_pv_etotal_this_month:
       value_template: "{{ state_attr('sensor.sensor.inverter_solar', 'thismonthetotle') }}"
-      unit_of_measurement: 'kWh'
-      friendly_name: 'PV energy this month'
+      unit_of_measurement: "kWh"
+      friendly_name: "PV energy this month"
 
 # Lights
 - platform: template
   sensors:
     lights_on_amount:
-      friendly_name: 'Lights on'
-      unit_of_measurement: 'on'
+      friendly_name: "Lights on"
+      unit_of_measurement: "on"
       value_template: >
         {{ states['light'] | selectattr('state', 'eq', 'on') | list | count }}
 
@@ -65,14 +65,14 @@
 - platform: template
   sensors:
     motion_detection:
-      friendly_name: 'Motion Detection'
-      value_template: "{{ state_attr('camera.tapo_camera_hd', 'motion_detection') == 'on' }}"
+      friendly_name: "Motion Detection"
+      value_template: "{{ state_attr('camera.tapo_camera_hd_stream', 'motion_detection') == 'on' }}"
 
 # Date & time
 - platform: template
   sensors:
     day_of_week:
-      friendly_name: 'Day of the week'
+      friendly_name: "Day of the week"
       icon_template: mdi:calendar-outline
       value_template: >
         {{ ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'][now().weekday()] }}
@@ -81,13 +81,13 @@
 - platform: template
   sensors:
     people_home:
-      friendly_name: 'People at home'
+      friendly_name: "People at home"
       icon_template: mdi:home-plus-outline
       unit_of_measurement: people
       value_template: >
         {{ states['person'] | selectattr('state', 'eq', 'home') | list | count }}
     people_away:
-      friendly_name: 'People away'
+      friendly_name: "People away"
       icon_template: mdi:home-minus-outline
       unit_of_measurement: people
       value_template: >
@@ -121,8 +121,8 @@
 - platform: template
   sensors:
     next_rain_forecast_in_minutes:
-      friendly_name: 'Buienalarm Next Rain Forecast (min)'
-      unit_of_measurement: 'min'
+      friendly_name: "Buienalarm Next Rain Forecast (min)"
+      unit_of_measurement: "min"
       value_template: >-
         {% if as_timestamp(states('sensor.buienalarm_next_rain_forecast')) %}
           {{ ( ( as_timestamp(states('sensor.buienalarm_next_rain_forecast')) - as_timestamp(now()) ) / 60 ) | round }}

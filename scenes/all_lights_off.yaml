@@ -1,6 +1,6 @@
-- id: '1616836047419'
+- id: "1616836047419"
   name: All lights off
   entities:
     light.all_lights:
-      state: 'off'
+      state: "off"
   icon: mdi:power

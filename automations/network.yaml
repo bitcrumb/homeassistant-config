@@ -1,14 +1,14 @@
 ---
-- id: '1616785361376'
+- id: "1616785361376"
   alias: 🔄 Notify when external IP-address changes
-  description: ''
+  description: ""
   trigger:
-  - platform: state
-    entity_id: sensor.public_ip_address
+    - platform: state
+      entity_id: sensor.public_ip_address
   condition: []
   action:
-  - service: notify.lode_devices
-    data:
-      title: 🌐 IP-address change
-      message: New external IP address is {{ states('sensor.public_ip_address') }}
+    - service: notify.lode_devices
+      data:
+        title: 🌐 IP-address change
+        message: New external IP address is {{ states('sensor.public_ip_address') }}
   mode: single

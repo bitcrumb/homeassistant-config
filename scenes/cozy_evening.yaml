@@ -1,4 +1,4 @@
-- id: '1616934212663'
+- id: "1616934212663"
   name: Evening
   entities:
     media_player.living_room:
@@ -7,9 +7,9 @@
       media_content_id: x-sonos-spotify:spotify%3atrack%3a4SKLUEuuVz456xe7QZkEQo?sid=9&flags=8224&sn=4
       media_content_type: music
       shuffle: false
-      repeat: 'off'
+      repeat: "off"
       sonos_group:
-      - media_player.living_room
+        - media_player.living_room
       queue_position: 0
       state: playing
   icon: mdi:candle

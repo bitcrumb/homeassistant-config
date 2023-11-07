@@ -1,4 +1,4 @@
-- id: '1617827752224'
+- id: "1617827752224"
   name: Bedtime
   entities:
     media_player.samsung_tv:

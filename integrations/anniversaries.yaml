@@ -7,11 +7,11 @@
 #
 anniversaries:
   sensors:
-  - name: Lode's Birthday
-    date: !secret birthdate_lode
-  - name: Ellen's Birthday
-    date: !secret birthdate_ellen
-  - name: Juna's Birthday
-    date: !secret birthdate_juna
-  - name: Otis' Birthday
-    date: !secret birthdate_otis
+    - name: Lode's Birthday
+      date: !secret birthdate_lode
+    - name: Ellen's Birthday
+      date: !secret birthdate_ellen
+    - name: Juna's Birthday
+      date: !secret birthdate_juna
+    - name: Otis' Birthday
+      date: !secret birthdate_otis

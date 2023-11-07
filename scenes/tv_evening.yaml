@@ -1,38 +1,38 @@
-- id: '1616835830496'
+- id: "1616835830496"
   name: TV
   entities:
-    light.tv_led_strip:
+    light.led_strip_tv:
       min_mireds: 153
       max_mireds: 370
       brightness: 255
       hs_color:
-      - 240
-      - 100
+        - 240
+        - 100
       rgb_color:
-      - 0
-      - 0
-      - 255
+        - 0
+        - 0
+        - 255
       xy_color:
-      - 0.136
-      - 0.04
+        - 0.136
+        - 0.04
       entity_id:
-      - light.tv_led_strip
-      state: 'on'
+        - light.led_strip_tv
+      state: "on"
     light.tv_spots:
       min_mireds: 153
       max_mireds: 370
       brightness: 255
       hs_color:
-      - 240
-      - 100
+        - 240
+        - 100
       rgb_color:
-      - 0
-      - 0
-      - 255
+        - 0
+        - 0
+        - 255
       xy_color:
-      - 0.136
-      - 0.04
+        - 0.136
+        - 0.04
       entity_id:
-      - light.tv_spots
-      state: 'on'
+        - light.tv_spots
+      state: "on"
   icon: mdi:television-play

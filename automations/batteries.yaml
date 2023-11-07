@@ -1,42 +1,42 @@
 ---
-- id: '1616786307664'
+- id: "1616786307664"
   alias: 🔋 The battery of Otis' iPad is very low (< 20%)
-  description: ''
+  description: ""
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.ipad_air_otis_battery_level
-    below: 20
+    - platform: numeric_state
+      entity_id: sensor.ipad_air_otis_battery_level
+      below: 20
   condition: []
   action:
-  - service: notify.notify
-    data:
-      message: The battery of Otis' iPad is very low.
-      title: 🔋 Battery low!
+    - service: notify.notify
       data:
-        push:
-          sound:
-            name: default
-            critical: 1
-            volume: 1
+        message: The battery of Otis' iPad is very low.
+        title: 🔋 Battery low!
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1
   mode: single
 
-- id: '1616786351023'
+- id: "1616786351023"
   alias: 🔋 The battery of Juna's iPad is very low (< 20%)
-  description: ''
+  description: ""
   trigger:
-  - platform: numeric_state
-    entity_id: sensor.ipad_air_juna_battery_level
-    below: 20
+    - platform: numeric_state
+      entity_id: sensor.ipad_air_juna_battery_level
+      below: 20
   condition: []
   action:
-  - service: notify.notify
-    data:
-      message: The battery of Juna's iPad is very low.
-      title: 🔋 Battery low!
+    - service: notify.notify
       data:
-        push:
-          sound:
-            name: default
-            critical: 1
-            volume: 1
+        message: The battery of Juna's iPad is very low.
+        title: 🔋 Battery low!
+        data:
+          push:
+            sound:
+              name: default
+              critical: 1
+              volume: 1
   mode: single
