@@ -2,6 +2,7 @@
 from __future__ import annotations
 
 import asyncio
+from collections.abc import Callable
 from datetime import datetime, timedelta
 from enum import Enum
 import logging
@@ -35,7 +36,6 @@ from homeassistant.const import (
     CONF_BROADCAST_ADDRESS,
     CONF_DEVICE_ID,
     CONF_HOST,
-    CONF_ID,
     CONF_MAC,
     CONF_NAME,
     CONF_PORT,
@@ -43,6 +43,8 @@ from homeassistant.const import (
     CONF_SERVICE_DATA,
     CONF_TIMEOUT,
     CONF_TOKEN,
+    SERVICE_TURN_OFF,
+    SERVICE_TURN_ON,
     STATE_OFF,
     STATE_ON,
 )
@@ -50,14 +52,13 @@ from homeassistant.core import DOMAIN as HA_DOMAIN, HomeAssistant, callback
 from homeassistant.exceptions import HomeAssistantError
 from homeassistant.helpers import config_validation as cv, entity_platform
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.dispatcher import async_dispatcher_connect
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.service import CONF_SERVICE_ENTITY_ID, async_call_from_config
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.util import Throttle, dt as dt_util
 from homeassistant.util.async_ import run_callback_threadsafe
 
+from . import SamsungTVDeviceInfo
 from .api.samsungcast import SamsungCastTube
 from .api.samsungws import ArtModeStatus, SamsungTVAsyncRest, SamsungTVWS
 from .api.smartthings import SmartThingsTV, STStatus
@@ -67,9 +68,6 @@ from .const import (
     CONF_APP_LIST,
     CONF_APP_LOAD_METHOD,
     CONF_CHANNEL_LIST,
-    CONF_DEVICE_MODEL,
-    CONF_DEVICE_NAME,
-    CONF_DEVICE_OS,
     CONF_DUMP_APPS,
     CONF_EXT_POWER_ENTITY,
     CONF_LOGO_OPTION,
@@ -87,6 +85,7 @@ from .const import (
     CONF_WOL_REPEAT,
     CONF_WS_NAME,
     DATA_CFG_YAML,
+    DATA_DEV_INFO,
     DATA_OPTIONS,
     DEFAULT_APP,
     DEFAULT_PORT,
@@ -97,8 +96,6 @@ from .const import (
     MAX_WOL_REPEAT,
     SERVICE_SELECT_PICTURE_MODE,
     SERVICE_SET_ART_MODE,
-    SERVICE_TURN_OFF,
-    SERVICE_TURN_ON,
     SIGNAL_CONFIG_ENTITY,
     STD_APP_LIST,
     WS_PREFIX,
@@ -168,6 +165,7 @@ async def async_setup_entry(
     # session used by aiohttp
     session = async_get_clientsession(hass)
     local_logo_path = hass.data[DOMAIN].get(LOCAL_LOGO_PATH)
+    dev_info: SamsungTVDeviceInfo = hass.data[DOMAIN][entry.entry_id][DATA_DEV_INFO]
 
     config = entry.data.copy()
     add_conf = hass.data[DOMAIN][entry.entry_id].get(DATA_CFG_YAML, {})
@@ -189,7 +187,7 @@ async def async_setup_entry(
         [
             SamsungTVDevice(
                 config,
-                config.get(CONF_ID, entry.entry_id),
+                dev_info,
                 hass.data[DOMAIN][entry.entry_id],
                 session,
                 update_token_func,
@@ -248,16 +246,20 @@ class ArtModeSupport(Enum):
 class SamsungTVDevice(MediaPlayerEntity):
     """Representation of a Samsung TV."""
 
+    _attr_device_class = MediaPlayerDeviceClass.TV
+    _attr_has_entity_name = True
+    _attr_name = None
+
     def __init__(
         self,
-        config,
-        unique_id,
-        entry_data,
+        config: dict[str, Any],
+        dev_info: SamsungTVDeviceInfo,
+        entry_data: dict[str, Any] | None,
         session: ClientSession,
-        update_token_func,
-        logo_file,
-        local_logo_path,
-    ):
+        update_token_func: Callable[[str], None],
+        logo_file: str,
+        local_logo_path: str | None,
+    ) -> None:
         """Initialize the Samsung device."""
 
         self._entry_data = entry_data
@@ -265,10 +267,8 @@ class SamsungTVDevice(MediaPlayerEntity):
         self._mac = config.get(CONF_MAC)
 
         # Set entity attributes
-        self._attr_name = config.get(CONF_NAME, self._host)
-        self._attr_unique_id = unique_id
-        self._attr_icon = "mdi:television"
-        self._attr_device_class = MediaPlayerDeviceClass.TV
+        self._attr_unique_id = dev_info.unique_id
+        self._attr_device_info = dev_info.device_info
         self._attr_media_title = None
         self._attr_media_image_url = None
         self._attr_media_image_remotely_accessible = False
@@ -276,20 +276,6 @@ class SamsungTVDevice(MediaPlayerEntity):
         # Assume that the TV is not muted and volume is 0
         self._attr_is_volume_muted = False
         self._attr_volume_level = 0.0
-
-        self._attr_device_info = DeviceInfo(
-            identifiers={(DOMAIN, self._attr_unique_id)},
-            name=self._attr_name,
-            manufacturer="Samsung Electronics",
-        )
-        self._attr_device_info.update(
-            self._get_add_dev_info(
-                config.get(CONF_DEVICE_MODEL),
-                config.get(CONF_DEVICE_NAME),
-                config.get(CONF_DEVICE_OS),
-                self._mac,
-            )
-        )
 
         # Device information from TV
         self._device_info: dict[str, Any] | None = None
@@ -329,7 +315,7 @@ class SamsungTVDevice(MediaPlayerEntity):
         self._show_channel_number: bool = False
 
         # ws initialization
-        ws_name = config.get(CONF_WS_NAME, self._attr_name)
+        ws_name = config.get(CONF_WS_NAME, dev_info.name)
         self._ws = SamsungTVWS(
             host=self._host,
             token=config.get(CONF_TOKEN),
@@ -401,21 +387,6 @@ class SamsungTVDevice(MediaPlayerEntity):
         """Run when entity will be removed from hass."""
         self._ws.unregister_status_callback()
         await self.hass.async_add_executor_job(self._ws.stop_poll)
-
-    @staticmethod
-    def _get_add_dev_info(dev_model, dev_name, dev_os, dev_mac):
-        """Get additional device information."""
-        model = dev_model or "Samsung TV"
-        if dev_name:
-            model = f"{model} ({dev_name})"
-
-        dev_info = DeviceInfo(model=model)
-        if dev_os:
-            dev_info["sw_version"] = dev_os
-        if dev_mac:
-            dev_info["connections"] = {(CONNECTION_NETWORK_MAC, dev_mac)}
-
-        return dict(dev_info)
 
     @staticmethod
     def _split_app_list(app_list: dict[str, str]) -> list[dict[str, str]]:
@@ -670,7 +641,7 @@ class SamsungTVDevice(MediaPlayerEntity):
         if self._dump_apps:
             _LOGGER.info(
                 "List of available apps for SamsungTV %s: %s",
-                self._attr_name,
+                self._host,
                 dump_app_list,
             )
             self._dump_apps = False
