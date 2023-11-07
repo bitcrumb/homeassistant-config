@@ -34,5 +34,5 @@ aircast.xml
 
 # Feedreader
 feedreader.pickle
-go2rtc-1.2.0
+go2rtc*
 music_assistant.db.old
