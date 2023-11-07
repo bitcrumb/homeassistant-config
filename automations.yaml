@@ -33,11 +33,16 @@
   trigger:
   - platform: state
     entity_id:
-    - sensor.recycleapp_morgen
+    - sensor.recycleapp_tomorrow
   condition:
   - condition: template
     value_template: '{{ states.sensor.recycleapp_tomorrow.state != ''None'' }}'
   action:
+  - delay:
+      hours: 18
+      minutes: 0
+      seconds: 0
+      milliseconds: 0
   - service: notify.lode_devices
     data:
       title: ♻️ Afvalophaling
@@ -327,7 +332,7 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.outdoor_luminance
-    above: 50000
+    above: 100000
   condition:
   - condition: state
     entity_id: cover.screen
@@ -399,51 +404,23 @@
       value: '{{ states(''sensor.inverter_solar_energy'') }}'
       date: '{{ now().isoformat() }}'
   mode: single
-- id: '1663759730449'
-  alias: Dishwasher started
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.smart_plug_dishwasher_power
-    above: 5
-  condition: []
-  action:
-  - service: notify.lode_devices
-    data:
-      title: "\U0001F37D Dishwasher started"
-      message: The dishwasher has started cleaning.
-  mode: single
 - id: '1663759782665'
   alias: Dishwasher finished
   description: ''
   trigger:
   - platform: numeric_state
     entity_id: sensor.smart_plug_dishwasher_power
-    below: 5
+    below: 20
     for:
       hours: 0
-      minutes: 5
+      minutes: 20
       seconds: 0
   condition: []
   action:
-  - service: notify.lode_devices
+  - service: notify.parents_devices
     data:
-      title: "\U0001F37D Dishwasher finished"
-      message: "The dishwasher has finished its cleaning cycle \U0001FAE7."
-  mode: single
-- id: '1663760240422'
-  alias: Washing machine started
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.smart_plug_washer_power
-    above: 5
-  condition: []
-  action:
-  - service: notify.lode_devices
-    data:
-      title: "\U0001F9FA Washing machine started"
-      message: The washing machines has started its cycle.
+      title: "\U0001F37D️ The dishwasher is ready"
+      message: The dishwasher has finished its cleaning cycle.
   mode: single
 - id: '1663760300053'
   alias: Washing machine finished
@@ -451,31 +428,17 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.smart_plug_washer_power
-    below: 5
+    below: 15
     for:
       hours: 0
-      minutes: 5
+      minutes: 15
       seconds: 0
   condition: []
   action:
-  - service: notify.lode_devices
+  - service: notify.parents_devices
     data:
-      title: "\U0001F9FA \U0001FAE7 Washing machine finished"
-      message: The washing machines has finished its cycle.
-  mode: single
-- id: '1663760496579'
-  alias: Dryer started
-  description: ''
-  trigger:
-  - platform: numeric_state
-    entity_id: sensor.smart_plug_dryer_power
-    above: 5
-  condition: []
-  action:
-  - service: notify.lode_devices
-    data:
-      title: "\U0001F9FA Dryer started"
-      message: The dryer has started its cycle.
+      title: "\U0001F9FA \U0001FAE7 Washing machine ready"
+      message: The washing machine has finished its cycle.
   mode: single
 - id: '1663760560002'
   alias: Dryer finished
@@ -483,17 +446,17 @@
   trigger:
   - platform: numeric_state
     entity_id: sensor.smart_plug_dryer_power
-    below: 5
+    below: 15
     for:
       hours: 0
       minutes: 5
       seconds: 0
   condition: []
   action:
-  - service: notify.lode_devices
+  - service: notify.parents_devices
     data:
-      title: "\U0001F9FA \U0001FAE7 Dryer finished"
-      message: The dryer has finished its cycle ✨.
+      title: "\U0001F455 The dryer is ready"
+      message: The dryer has finished its cycle.
   mode: single
 - id: '1666771838886'
   alias: "\U0001F30D Warn when internet connection offline"
@@ -531,17 +494,6 @@
       title: Internet connectivity has been restored.
       message: "\U0001F30D The internet connection is online again!"
   mode: parallel
-- id: '1667591166127'
-  alias: "\U0001F4A1 Turn on light, switch, scene, script or group based on motion
-    and illuminance."
-  description: ''
-  use_blueprint:
-    path: freakshock88/motion_illuminance_activated_entity.yaml
-    input:
-      motion_sensor: binary_sensor.tapo_camera_motion
-      target_entity: light.fridge_lights
-      illuminance_sensor: sensor.luminance_sensor_luminance
-      illuminance_cutoff: input_number.luminance_threshold
 - id: '1673022556063'
   alias: Wake up iPad Mini when motion detected
   description: ''
