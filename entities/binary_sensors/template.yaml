@@ -12,4 +12,6 @@
         {{
           not is_state("person.lode_vanhove", "home")
           and not is_state("person.ellen_ophalvens", "home")
+          and not is_state("person.otis_vanhove", "home")
+          and not is_state("person.juna_vanhove", "home")
         }}

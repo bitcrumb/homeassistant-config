@@ -6,7 +6,7 @@
 - platform: group
   name: "Lode Devices"
   services:
-    - service: mobile_app_iphone_14_pro
+    - service: mobile_app_iphone_14_pro_lode
     - service: mobile_app_macbook_pro_lode
 
 - platform: group
@@ -17,22 +17,22 @@
 - platform: group
   name: "Parents Devices"
   services:
-    - service: mobile_app_iphone_14_pro
+    - service: mobile_app_iphone_14_pro_lode
     - service: mobile_app_macbook_pro_lode
     - service: mobile_app_iphone_13_ellen
 
 - platform: group
   name: "Otis Devices"
   services:
-    - service: mobile_app_ipad_air_otis
+    - service: mobile_app_ipad_otis
 
 - platform: group
   name: "Juna Devices"
   services:
-    - service: mobile_app_ipad_air_juna
+    - service: mobile_app_ipad_juna
 
 - platform: group
   name: "Children Devices"
   services:
-    - service: mobile_app_ipad_air_juna
-    - service: mobile_app_ipad_air_otis
+    - service: mobile_app_ipad_juna
+    - service: mobile_app_ipad_otis
