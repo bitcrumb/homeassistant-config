@@ -1,0 +1,7 @@
+homekit:
+  - filter:
+      include_entities:
+        - light.group_all
+        - light.group_fridge
+        - light.group_dining_room
+        - light.group_kitchen

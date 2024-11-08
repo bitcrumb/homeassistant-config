@@ -4,11 +4,12 @@
 # See: https://www.home-assistant.io/integrations/google_assistant/
 #
 google_assistant:
-  project_id: smart-home-22e99
-  service_account: !include ../google_service_account.json
+  project_id: home-assistant-29861
+  service_account: !include ../google_assistant_service_account.json
   report_state: true
   expose_by_default: false
-  # exposed_domains:
+  exposed_domains:
+  #   - light
   #   - alarm_control_panel
   #   - camera
   #   - cover
@@ -18,7 +19,6 @@ google_assistant:
   #   - humidifier
   #   - input_boolean
   #   - input_select
-  #   - light
   #   - lock
   #   - media_player
   #   - scene
@@ -27,27 +27,5 @@ google_assistant:
   #   - switch
   #   - vacuum
   entity_config:
-    media_player.samsung_tv:
-      name: "Samsung TV"
-    # light.tv_spots:
-    #   name: 'Spots TV'
-    # light.tv_led_strip:
-    #   name: 'LED Strip TV'
-    # light.led_strip_juna:
-    #   name: 'LED Strip Juna'
-    # light.led_strip_otis:
-    #   name: 'LED Strip Otis'
-    # light.fridge_lights:
-    #   name: 'Frigo'
-    # light.office_ceiling_lights:
-    #   name: 'Kantoor bureau'
-    # light.office_wall_lights:
-    #   name: 'Kantoor muur'
-    # light.office_mood_light:
-    #   name: 'Kantoor sfeerlicht'
-    # light.kitchen_lights:
-    #   name: 'Keuken lichten'
-    # cover.awning:
-    #   name: "Luifel"
-    # cover.screen:
-    #   name: "Screen"
+    light.group_kitchen:
+      name: "Keuken lichten"
