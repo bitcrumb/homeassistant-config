@@ -64,7 +64,7 @@
       app_id: 9Ur5IzDKqV.TizenYouTube
       source: YouTube
       state: 'on'
-    light.tv_spots:
+    light.group_tv_spots:
       min_color_temp_kelvin: 2000
       max_color_temp_kelvin: 6535
       min_mireds: 153
@@ -86,9 +86,7 @@
       - 0.136
       - 0.04
       entity_id:
-      - light.led_tv_left
-      - light.led_tv_center
-      - light.led_tv_right
+      - light.group_tv_spots
       icon: mdi:lightbulb-group
       friendly_name: TV Wall
       supported_features: 0
@@ -122,14 +120,14 @@
   metadata:
     media_player.samsung_tv:
       entity_only: true
-    light.tv_spots:
+    light.group_tv_spots:
       entity_only: true
     light.led_strip_tv:
       entity_only: true
 - id: '1672990782081'
   name: Morning
   entities:
-    light.tv_spots:
+    light.group_tv_spots:
       min_color_temp_kelvin: 2000
       max_color_temp_kelvin: 6535
       min_mireds: 153
@@ -151,9 +149,7 @@
       - 0.136
       - 0.04
       entity_id:
-      - light.led_tv_left
-      - light.led_tv_center
-      - light.led_tv_right
+      - light.group_tv_spots
       icon: mdi:lightbulb-group
       friendly_name: TV
       supported_features: 0
@@ -231,7 +227,7 @@
       friendly_name: LED Office Wall (Right)
       supported_features: 0
       state: 'on'
-    light.kitchen_lights:
+    light.group_kitchen:
       min_color_temp_kelvin: 2000
       max_color_temp_kelvin: 6535
       min_mireds: 153
@@ -246,7 +242,7 @@
       friendly_name: Kitchen
       supported_features: 0
       state: 'off'
-    light.fridge_lights:
+    light.group_fridge:
       min_color_temp_kelvin: 2000
       max_color_temp_kelvin: 6535
       min_mireds: 153
@@ -275,7 +271,7 @@
       friendly_name: Fridge
       supported_features: 0
       state: 'on'
-    light.office_desk:
+    light.group_office_desk:
       min_color_temp_kelvin: 2000
       max_color_temp_kelvin: 6535
       min_mireds: 153
@@ -293,7 +289,7 @@
       state: 'off'
   icon: mdi:weather-sunset-up
   metadata:
-    light.tv_spots:
+    light.group_tv_spots:
       entity_only: true
     light.led_strip_tv:
       entity_only: true
@@ -301,11 +297,11 @@
       entity_only: true
     light.led_office_wall_right:
       entity_only: true
-    light.kitchen_lights:
+    light.group_kitchen:
       entity_only: true
-    light.fridge_lights:
+    light.group_fridge:
       entity_only: true
-    light.office_desk:
+    light.group_office_desk:
       entity_only: true
 - id: '1673081255396'
   name: PlayStation
@@ -314,47 +310,160 @@
       source_list:
       - TV
       - HDMI
-      - YouTube
+      - Apple TV+
+      - Deezer
       - Disney+
-      - Streamz
+      - Eleven Belgium
+      - Eurosport
+      - Facebook Watch
+      - Google Play Films & TV
+      - Internet
+      - LEGO® TV
+      - McAfee Security for TV
       - Netflix
+      - Plex
+      - Prime Video
+      - Privacyvoorkeuren
+      - Rakuten TV
+      - Red Bull TV
+      - Screens on fire
+      - Smart IPTV
       - Spotify - muziek en podcasts
       - Steam Link
-      - Prime Video
-      - Screens on fire
-      - Internet
-      - Rakuten TV
-      - Facebook Watch
-      - LEGO® TV
-      - e-Manual
-      - Eurosport
-      - Google Play Films & TV
-      - Red Bull TV
-      - meJane
-      - Smart IPTV
-      - Deezer
-      - Plex
-      - McAfee Security for TV
-      - Eleven Belgium
+      - Streamz
       - TED
-      - TuneIn
       - TV VLAANDEREN
+      - TuneIn
       - TÉLÉSAT
-      - Privacyvoorkeuren
       - VTM GO
-      - Apple TV+
-      device_class: tv
-      icon: mdi:television
-      friendly_name: Samsung TV
-      supported_features: 155581
-      ip_address: 192.168.1.11
-      volume_level: 0.04
+      - YouTube
+      - e-Manual
+      - meJane
+      volume_level: 0.09
       is_volume_muted: false
-      media_content_type: video
-      app_id: TV/HDMI
-      source: TV/HDMI
+      device_class: tv
+      friendly_name: Samsung 7 Series
+      supported_features: 24509
       state: 'on'
+    switch.ps5_294_power:
+      icon: mdi:sony-playstation
+      friendly_name: PS5-294 power
+      state: 'off'
   icon: mdi:sony-playstation
   metadata:
     media_player.samsung_tv:
+      entity_only: true
+- id: '1710419719386'
+  name: Close screen
+  entities:
+    cover.screen:
+      current_position: 0
+      device_class: blind
+      icon: mdi:window-closed
+      friendly_name: Screen
+      supported_features: 15
+      state: closed
+  icon: mdi:blinds-open
+  metadata: {}
+- id: '1710419737595'
+  name: Close awning
+  entities:
+    cover.awning:
+      current_position: 0
+      device_class: awning
+      icon: mdi:awning-outline
+      friendly_name: Awning
+      supported_features: 15
+      state: closed
+  icon: mdi:blinds-open
+  metadata: {}
+- id: '1710789125202'
+  name: Moody Office
+  entities:
+    light.group_office_desk:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode:
+      brightness:
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      rgb_color:
+      xy_color:
+      entity_id:
+      - light.led_office_desk_left
+      - light.led_office_desk_center
+      - light.led_office_desk_right
+      icon: mdi:spotlight-beam
+      friendly_name: Desk
+      supported_features: 0
+      state: 'off'
+    light.group_office_wall:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      - 285
+      - 100
+      rgb_color:
+      - 191
+      - 0
+      - 255
+      xy_color:
+      - 0.301
+      - 0.116
+      entity_id:
+      - light.led_office_wall_left
+      - light.led_office_wall_right
+      icon: mdi:spotlight-beam
+      friendly_name: Office
+      supported_features: 0
+      state: 'on'
+    light.led_office_mood:
+      min_color_temp_kelvin: 2000
+      max_color_temp_kelvin: 6535
+      min_mireds: 153
+      max_mireds: 500
+      supported_color_modes:
+      - brightness
+      - color_temp
+      - hs
+      color_mode: hs
+      brightness: 255
+      color_temp_kelvin:
+      color_temp:
+      hs_color:
+      - 272
+      - 100
+      rgb_color:
+      - 135
+      - 0
+      - 255
+      xy_color:
+      - 0.227
+      - 0.082
+      icon: mdi:television-ambient-light
+      friendly_name: Mood
+      supported_features: 0
+      state: 'on'
+  icon: mdi:liquid-spot
+  metadata:
+    light.group_office_desk:
+      entity_only: true
+    light.group_office_wall:
+      entity_only: true
+    light.led_office_mood:
       entity_only: true

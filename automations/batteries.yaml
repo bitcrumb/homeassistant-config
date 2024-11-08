@@ -4,7 +4,7 @@
   description: ""
   trigger:
     - platform: numeric_state
-      entity_id: sensor.ipad_air_otis_battery_level
+      entity_id: sensor.ipad_otis_battery_level
       below: 20
   condition: []
   action:
@@ -25,7 +25,7 @@
   description: ""
   trigger:
     - platform: numeric_state
-      entity_id: sensor.ipad_air_juna_battery_level
+      entity_id: sensor.ipad_juna_battery_level
       below: 20
   condition: []
   action:

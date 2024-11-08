@@ -25,7 +25,7 @@
         - 0.701
         - 0.299
       state: "on"
-    light.tv_spots:
+    light.group_tv_spots:
       min_mireds: 153
       max_mireds: 370
       brightness: 1

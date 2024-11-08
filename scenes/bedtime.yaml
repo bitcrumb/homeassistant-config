@@ -3,7 +3,7 @@
   entities:
     media_player.samsung_tv:
       state: off
-    light.all_lights:
+    light.group_all:
       state: off
     media_player.living_room:
       state: paused

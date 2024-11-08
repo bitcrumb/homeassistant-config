@@ -2,7 +2,9 @@
 mobile_devices:
   name: Mobile Devices
   entities:
-    - device_tracker.ipad_air_juna
-    - device_tracker.ipad_air_otis
-    - device_tracker.iphone_lode
-    - device_tracker.iphone_ellen
+    - device_tracker.phone_juna
+    - device_tracker.ipad_juna
+    - device_tracker.phone_otis
+    - device_tracker.ipad_otis
+    - device_tracker.phone_lode
+    - device_tracker.phone_ellen

@@ -18,7 +18,7 @@
       entity_id:
         - light.led_strip_tv
       state: "on"
-    light.tv_spots:
+    light.group_tv_spots:
       min_mireds: 153
       max_mireds: 370
       brightness: 255
@@ -33,6 +33,6 @@
         - 0.136
         - 0.04
       entity_id:
-        - light.tv_spots
+        - light.group_tv_spots
       state: "on"
   icon: mdi:television-play
