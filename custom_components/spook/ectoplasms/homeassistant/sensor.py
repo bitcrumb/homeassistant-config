@@ -1,8 +1,9 @@
-"""Spook - Not your homie."""
+"""Spook - Your homie."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass, field
-from typing import TYPE_CHECKING
+from typing import TYPE_CHECKING, Any
 
 from homeassistant.components import (
     automation,
@@ -44,24 +45,18 @@ if TYPE_CHECKING:
 
     from homeassistant.config_entries import ConfigEntry
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
+    from homeassistant.util.event_type import EventType
 
 
-@dataclass
-class HomeAssistantSpookSensorEntityDescriptionMixin:
-    """Mixin values for Home Assistant related sensors."""
-
-    value_fn: Callable[[HomeAssistant], int | None]
-
-
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class HomeAssistantSpookSensorEntityDescription(
     SpookEntityDescription,
     SensorEntityDescription,
-    HomeAssistantSpookSensorEntityDescriptionMixin,
 ):
     """Class describing Spook Home Assistant sensor entities."""
 
-    update_events: set[str] = field(default_factory=set)
+    value_fn: Callable[[HomeAssistant], int | None]
+    update_events: set[EventType[Any] | str] = field(default_factory=set)
 
 
 SENSORS: tuple[HomeAssistantSpookSensorEntityDescription, ...] = (

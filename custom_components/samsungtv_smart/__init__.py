@@ -1,4 +1,5 @@
 """The samsungtv_smart integration."""
+
 from __future__ import annotations
 
 import asyncio
@@ -13,6 +14,7 @@ import async_timeout
 import voluptuous as vol
 from websocket import WebSocketException
 
+from homeassistant.components.http import StaticPathConfig
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.const import (
     ATTR_DEVICE_ID,
@@ -33,9 +35,7 @@ from homeassistant.const import (
 )
 from homeassistant.core import HomeAssistant, callback
 import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.device_registry import CONNECTION_NETWORK_MAC
 from homeassistant.helpers.dispatcher import async_dispatcher_send
-from homeassistant.helpers.entity import DeviceInfo
 from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.helpers.typing import ConfigType
 
@@ -48,9 +48,7 @@ from .const import (
     ATTR_DEVICE_OS,
     CONF_APP_LIST,
     CONF_CHANNEL_LIST,
-    CONF_DEVICE_MODEL,
     CONF_DEVICE_NAME,
-    CONF_DEVICE_OS,
     CONF_LOAD_ALL_APPS,
     CONF_SCAN_APP_HTTP,
     CONF_SHOW_CHANNEL_NR,
@@ -60,8 +58,8 @@ from .const import (
     CONF_UPDATE_CUSTOM_PING_URL,
     CONF_UPDATE_METHOD,
     CONF_WS_NAME,
+    DATA_CFG,
     DATA_CFG_YAML,
-    DATA_DEV_INFO,
     DATA_OPTIONS,
     DEFAULT_PORT,
     DEFAULT_SOURCE_LIST,
@@ -164,7 +162,7 @@ def is_valid_ha_version() -> bool:
 def _notify_message(
     hass: HomeAssistant, notification_id: str, title: str, message: str
 ) -> None:
-    """Notify user with persistent notification"""
+    """Notify user with persistent notification."""
     hass.async_create_task(
         hass.services.async_call(
             domain="persistent_notification",
@@ -304,13 +302,18 @@ def _migrate_entry_unique_id(hass: HomeAssistant, entry: ConfigEntry) -> None:
     hass.config_entries.async_update_entry(entry, unique_id=new_unique_id)
 
 
-def _register_logo_paths(hass: HomeAssistant) -> str | None:
+async def _register_logo_paths(hass: HomeAssistant) -> str | None:
     """Register paths for local logos."""
 
     static_logo_path = Path(__file__).parent / "static"
-    hass.http.register_static_path(STATIC_IMAGE_BASE_URL, str(static_logo_path), False)
+    static_paths = [
+        StaticPathConfig(
+            STATIC_IMAGE_BASE_URL, str(static_logo_path), cache_headers=False
+        )
+    ]
 
     local_logo_path = Path(hass.config.path("www", f"{DOMAIN}_logos"))
+    url_logo_path = str(local_logo_path)
     if not local_logo_path.exists():
         try:
             local_logo_path.mkdir(parents=True)
@@ -318,10 +321,15 @@ def _register_logo_paths(hass: HomeAssistant) -> str | None:
             _LOGGER.warning(
                 "Error registering custom logo folder %s: %s", str(local_logo_path), exc
             )
-            return None
+            url_logo_path = None
 
-    hass.http.register_static_path(CUSTOM_IMAGE_BASE_URL, str(local_logo_path), False)
-    return str(local_logo_path)
+    if url_logo_path is not None:
+        static_paths.append(
+            StaticPathConfig(CUSTOM_IMAGE_BASE_URL, url_logo_path, cache_headers=False)
+        )
+
+    await hass.http.async_register_static_paths(static_paths)
+    return url_logo_path
 
 
 async def get_device_info(hostname: str, session: ClientSession) -> dict:
@@ -516,7 +524,7 @@ async def async_setup(hass: HomeAssistant, config: ConfigType) -> bool:
                 hass.data[DOMAIN][valid_entries[0]] = {DATA_CFG_YAML: data_yaml}
 
     # Register path for local logo
-    if local_logo_path := await hass.async_add_executor_job(_register_logo_paths, hass):
+    if local_logo_path := await _register_logo_paths(hass):
         hass.data.setdefault(DOMAIN, {})[LOCAL_LOGO_PATH] = local_logo_path
 
     return True
@@ -540,16 +548,24 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     _migrate_options_format(hass, entry)
 
     # setup entry
-    hass.data.setdefault(DOMAIN, {}).setdefault(entry.entry_id, {})
-    if DATA_CFG_YAML in hass.data[DOMAIN][entry.entry_id]:
-        mac_addr = hass.data[DOMAIN][entry.entry_id][DATA_CFG_YAML].get(CONF_MAC)
-    else:
-        mac_addr = None
+    if DOMAIN not in hass.data:
+        hass.data[DOMAIN] = {}
 
-    hass.data[DOMAIN][entry.entry_id][DATA_DEV_INFO] = SamsungTVDeviceInfo(
-        entry.data, entry.entry_id, mac_addr
-    )
-    hass.data[DOMAIN][entry.entry_id][DATA_OPTIONS] = entry.options.copy()
+    add_conf = None
+    config = entry.data.copy()
+    if entry.entry_id in hass.data[DOMAIN]:
+        add_conf = hass.data[DOMAIN][entry.entry_id].get(DATA_CFG_YAML, {})
+        for attr, value in add_conf.items():
+            if value:
+                config[attr] = value
+
+    # setup entry
+    hass.data[DOMAIN][entry.entry_id] = {
+        DATA_CFG: config,
+        DATA_OPTIONS: entry.options.copy(),
+    }
+    if add_conf:
+        hass.data[DOMAIN][entry.entry_id][DATA_CFG_YAML] = add_conf
     entry.async_on_unload(entry.add_update_listener(_update_listener))
 
     await hass.config_entries.async_forward_entry_setups(entry, SAMSMART_PLATFORM)
@@ -562,6 +578,7 @@ async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     if unload_ok := await hass.config_entries.async_unload_platforms(
         entry, SAMSMART_PLATFORM
     ):
+        hass.data[DOMAIN][entry.entry_id].pop(DATA_CFG)
         hass.data[DOMAIN][entry.entry_id].pop(DATA_OPTIONS)
         if not hass.data[DOMAIN][entry.entry_id]:
             hass.data[DOMAIN].pop(entry.entry_id)
@@ -582,48 +599,3 @@ async def _update_listener(hass: HomeAssistant, entry: ConfigEntry) -> None:
     """Update when config_entry options update."""
     hass.data[DOMAIN][entry.entry_id][DATA_OPTIONS] = entry.options.copy()
     async_dispatcher_send(hass, SIGNAL_CONFIG_ENTITY)
-
-
-class SamsungTVDeviceInfo:
-    """Define generic samsung device info."""
-
-    def __init__(
-        self, config: dict[str, str], entry_id: str, forced_mac: str | None = None
-    ) -> None:
-        """Initialize the class."""
-        self._config = config
-        self._unique_id = config.get(CONF_ID, entry_id)
-        self._name = config.get(CONF_NAME, config[CONF_HOST])
-        self._mac = forced_mac or config.get(CONF_MAC)
-
-    @property
-    def unique_id(self) -> str:
-        """Return device unique id."""
-        return self._unique_id
-
-    @property
-    def name(self) -> str:
-        """Return device name."""
-        return self._name
-
-    @property
-    def device_info(self) -> DeviceInfo:
-        """Return device information."""
-        config = self._config
-
-        model = config.get(CONF_DEVICE_MODEL, "Samsung TV")
-        if dev_name := config.get(CONF_DEVICE_NAME):
-            model = f"{model} ({dev_name})"
-
-        device_info = DeviceInfo(
-            identifiers={(DOMAIN, self.unique_id)},
-            name=self.name,
-            manufacturer="Samsung Electronics",
-            model=model,
-        )
-        if dev_os := config.get(CONF_DEVICE_OS):
-            device_info["sw_version"] = dev_os
-        if self._mac:
-            device_info["connections"] = {(CONNECTION_NETWORK_MAC, self._mac)}
-
-        return device_info

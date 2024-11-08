@@ -3,26 +3,22 @@ import logging
 import time
 import uuid
 from pathlib import Path
-from typing import Union
 from urllib.parse import urlencode, urljoin
 
-import homeassistant.helpers.config_validation as cv
 import voluptuous as vol
 from aiohttp import web
 from aiohttp.web_exceptions import HTTPUnauthorized, HTTPGone, HTTPNotFound
-from homeassistant.components.camera import async_get_image
+from homeassistant.components.binary_sensor import HomeAssistant  # fix tests
+from homeassistant.components.camera import async_get_stream_source, async_get_image
 from homeassistant.components.hassio.ingress import _websocket_forward
 from homeassistant.components.http import HomeAssistantView
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.const import (
-    EVENT_HOMEASSISTANT_STOP,
-    ATTR_ENTITY_ID,
-    CONF_URL,
-)
+from homeassistant.const import ATTR_ENTITY_ID, CONF_URL, EVENT_HOMEASSISTANT_STOP
+from homeassistant.core import ServiceCall
+from homeassistant.helpers import config_validation as cv
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
 from homeassistant.helpers.network import get_url
 from homeassistant.helpers.template import Template
-from homeassistant.helpers.typing import HomeAssistantType, ConfigType, ServiceCallType
 
 from . import utils
 from .utils import DOMAIN, Server
@@ -45,8 +41,9 @@ DASH_CAST_SCHEMA = vol.Schema(
         vol.Required(ATTR_ENTITY_ID): cv.entity_ids,
         vol.Exclusive("url", "url"): cv.string,
         vol.Exclusive("entity", "url"): cv.entity_id,
-        vol.Optional("force", default=False): bool,
         vol.Optional("extra"): dict,
+        vol.Optional("force", default=False): bool,
+        vol.Optional("hass_url"): str,
     },
     required=True,
 )
@@ -59,19 +56,18 @@ HLS_COOKIE = "webrtc-hls-session"
 HLS_SESSION = str(uuid.uuid4())
 
 
-async def async_setup(hass: HomeAssistantType, config: ConfigType):
+async def async_setup(hass: HomeAssistant, config: dict):
     # 1. Serve lovelace card
     path = Path(__file__).parent / "www"
     for name in ("video-rtc.js", "webrtc-camera.js", "digital-ptz.js"):
-        utils.register_static_path(hass.http.app, "/webrtc/" + name, path / name)
+        await utils.register_static_path(hass, "/webrtc/" + name, str(path / name))
 
     # 2. Add card to resources
     version = getattr(hass.data["integrations"][DOMAIN], "version", 0)
     await utils.init_resource(hass, "/webrtc/webrtc-camera.js", str(version))
 
     # 3. Serve html page
-    path = Path(__file__).parent / "www/embed.html"
-    utils.register_static_path(hass.http.app, "/webrtc/embed", path)
+    await utils.register_static_path(hass, "/webrtc/embed", str(path / "embed.html"))
 
     # 4. Serve WebSocket API
     hass.http.register_view(WebSocketView)
@@ -81,7 +77,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
 
     # 6. Register webrtc.create_link and webrtc.dash_cast services:
 
-    async def create_link(call: ServiceCallType):
+    async def create_link(call: ServiceCall):
         link_id = call.data["link_id"]
         ttl = call.data["time_to_live"]
         LINKS[link_id] = {
@@ -91,24 +87,28 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
             "ts": time.time() + ttl if ttl else 0,
         }
 
-    async def dash_cast(call: ServiceCallType):
+    async def dash_cast(call: ServiceCall):
         link_id = uuid.uuid4().hex
         LINKS[link_id] = {
-            "url": call.data.get("url"),
-            "entity": call.data.get("entity"),
+            "url": call.data.get("url"),  # camera URL (rtsp...)
+            "entity": call.data.get("entity"),  # camera entity id
             "limit": 1,  # 1 attempt
             "ts": time.time() + 30,  # for 30 seconds
         }
 
+        hass_url = call.data.get("hass_url") or get_url(hass)
         query = call.data.get("extra", {})
         query["url"] = link_id
+        cast_url = hass_url + "/webrtc/embed?" + urlencode(query)
+
+        _LOGGER.debug(f"dash_cast: {cast_url}")
 
         await hass.async_add_executor_job(
             utils.dash_cast,
             hass,
             call.data[ATTR_ENTITY_ID],
-            f"{get_url(hass)}/webrtc/embed?" + urlencode(query),
-            call.data.get("force"),
+            cast_url,
+            call.data.get("force", False),
         )
 
     hass.services.async_register(DOMAIN, "create_link", create_link, CREATE_LINK_SCHEMA)
@@ -117,7 +117,7 @@ async def async_setup(hass: HomeAssistantType, config: ConfigType):
     return True
 
 
-async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
+async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry):
     # 1. If user set custom url
     go_url = entry.data.get(CONF_URL)
 
@@ -131,7 +131,7 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
         return True
 
     # 3. Serve go2rtc binary manually
-    binary = await utils.validate_binary(hass)
+    binary = await hass.async_add_executor_job(utils.validate_binary, hass)
     if not binary:
         return False
 
@@ -143,28 +143,33 @@ async def async_setup_entry(hass: HomeAssistantType, entry: ConfigEntry):
     return True
 
 
-async def async_unload_entry(hass: HomeAssistantType, entry: ConfigEntry):
+async def async_unload_entry(hass: HomeAssistant, entry: ConfigEntry):
     server = hass.data[DOMAIN]
     if isinstance(server, Server):
         server.stop()
     return True
 
 
-async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
+async def ws_connect(hass: HomeAssistant, params: dict) -> str:
     # 1. Server URL from card param
     server: str = params.get("server")
     # 2. Server URL from integration settings
     if not server:
-        server: Union[str, Server] = hass.data[DOMAIN]
+        server: str | Server = hass.data[DOMAIN]
     # 3. Server is manual binary
     if isinstance(server, Server):
         assert server.available, "WebRTC server not available"
         server = "http://localhost:1984/"
 
-    if name := params.get("entity"):
-        src = await utils.get_stream_source(hass, name)
-        assert src, f"Can't get URL for {name}"
-        query = {"src": src, "name": name}
+    if entity_id := params.get("entity"):
+        src = await async_get_stream_source(hass, entity_id)
+        if src is None:
+            # build link to MJPEG stream
+            if state := hass.states.get(entity_id):
+                if token := state.attributes.get("access_token"):
+                    src = f"{get_url(hass)}/api/camera_proxy_stream/{entity_id}?token={token}"
+        assert src, f"Can't get URL for {entity_id}"
+        query = {"src": src, "name": entity_id}
     elif src := params.get("url"):
         if "{{" in src or "{%" in src:
             src = Template(src, hass).async_render()
@@ -175,7 +180,18 @@ async def ws_connect(hass: HomeAssistantType, params: dict) -> str:
     return urljoin("ws" + server[4:], "api/ws") + "?" + urlencode(query)
 
 
-async def ws_poster(hass: HomeAssistantType, params: dict) -> web.Response:
+def _get_image_from_entity_id(hass: HomeAssistant, entity_id: str):
+    """Get camera component from entity_id."""
+    if (component := hass.data.get("image")) is None:
+        raise Exception("Image integration not set up")
+
+    if (image := component.get_entity(entity_id)) is None:
+        raise Exception("Image not found")
+
+    return image
+
+
+async def ws_poster(hass: HomeAssistant, params: dict) -> web.Response:
     poster: str = params["poster"]
 
     if "{{" in poster or "{%" in poster:
@@ -186,6 +202,13 @@ async def ws_poster(hass: HomeAssistantType, params: dict) -> web.Response:
         # support entity_id as poster
         image = await async_get_image(hass, poster)
         return web.Response(body=image.content, content_type=image.content_type)
+
+    if poster.startswith("image."):
+        # support entity_id as poster
+        image_entity = _get_image_from_entity_id(hass, poster)
+        image = await image_entity.async_image()
+        _LOGGER.debug(f"webrtc image_entity: {image_entity} - {len(image)}")
+        return web.Response(body=image, content_type="image/jpeg")
 
     # support poster from go2rtc stream name
     entry = hass.data[DOMAIN]
@@ -282,7 +305,7 @@ class HLSView(HomeAssistantView):
         if filename not in ("playlist.m3u8", "init.mp4", "segment.m4s", "segment.ts"):
             raise HTTPNotFound()
 
-        hass: HomeAssistantType = request.app["hass"]
+        hass: HomeAssistant = request.app["hass"]
         entry = hass.data[DOMAIN]
         url = "http://localhost:1984/" if isinstance(entry, Server) else entry
         url = urljoin(url, "api/hls/" + filename) + "?" + request.query_string

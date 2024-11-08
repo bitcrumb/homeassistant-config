@@ -1,5 +1,5 @@
 /** Chrome 63+, Safari 11.1+ */
-import {VideoRTC} from './video-rtc.js?v=1.8.0';
+import {VideoRTC} from './video-rtc.js?v=1.9.4';
 import {DigitalPTZ} from './digital-ptz.js?v=3.3.0';
 
 class WebRTCCamera extends VideoRTC {
@@ -32,6 +32,7 @@ class WebRTCCamera extends VideoRTC {
          *
          *     title: string,
          *     poster: string,
+         *     poster_remote: boolean,
          *     muted: boolean,
          *     intersection: number,
          *     ui: boolean,
@@ -63,20 +64,25 @@ class WebRTCCamera extends VideoRTC {
         this.config = Object.assign({
             mode: config.mse === false ? 'webrtc' : config.webrtc === false ? 'mse' : this.mode,
             media: this.media,
+            streams: [{url: config.url, entity: config.entity}],
+            poster_remote: config.poster && (config.poster.indexOf('://') > 0 || config.poster.charAt(0) === '/'),
         }, config);
-
-        if (!this.config.streams) {
-            this.config.streams = [{url: config.url, entity: config.entity}];
-        }
 
         this.streamID = -1;
         this.nextStream(false);
+
+        this.onhass = [];
     }
 
     set hass(hass) {
+        this._hass = hass;
+        this.onhass.forEach(fn => fn());
         // if card in vertical stack - `hass` property assign after `onconnect`
-        super.hass = hass;
-        this.onconnect();
+        // this.onconnect();
+    }
+
+    get hass() {
+        return this._hass;
     }
 
     /**
@@ -145,7 +151,7 @@ class WebRTCCamera extends VideoRTC {
         this.hass.callWS({
             type: 'auth/sign_path', path: '/api/webrtc/ws'
         }).then(data => {
-            if (this.config.poster && this.config.poster.indexOf('://') < 0) {
+            if (this.config.poster && !this.config.poster_remote) {
                 this.video.poster = this.hass.hassUrl(data.path) + '&poster=' + encodeURIComponent(this.config.poster);
             }
 
@@ -262,7 +268,7 @@ class WebRTCCamera extends VideoRTC {
         mode.addEventListener('click', () => this.nextStream(true));
 
         if (this.config.muted) this.video.muted = true;
-        if (this.config.poster && this.config.poster.indexOf('://') > 0) this.video.poster = this.config.poster;
+        if (this.config.poster_remote) this.video.poster = this.config.poster;
     }
 
     renderDigitalPTZ() {
@@ -397,10 +403,12 @@ class WebRTCCamera extends VideoRTC {
             </div>
         `);
 
+        const template = JSON.stringify(this.config.ptz);
         const handle = path => {
-            const data = this.config.ptz['data_' + path];
-            if (!data) return;
-            const [domain, service] = this.config.ptz.service.split('.', 2);
+            if (!this.config.ptz['data_' + path]) return;
+            const config = template.indexOf('${') < 0 ? this.config.ptz : JSON.parse(eval('`' + template + '`'));
+            const [domain, service] = config.service.split('.', 2);
+            const data = config['data_' + path];
             this.hass.callService(domain, service, data);
         };
         const ptz = this.querySelector('.ptz');
@@ -423,14 +431,21 @@ class WebRTCCamera extends VideoRTC {
     }
 
     saveScreenshot() {
-        const canvas = document.createElement('canvas');
-        canvas.width = this.video.videoWidth;
-        canvas.height = this.video.videoHeight;
-        canvas.getContext('2d').drawImage(this.video, 0, 0, canvas.width, canvas.height);
+        const a = document.createElement('a');
+
+        if (this.video.videoWidth && this.video.videoHeight) {
+            const canvas = document.createElement('canvas');
+            canvas.width = this.video.videoWidth;
+            canvas.height = this.video.videoHeight;
+            canvas.getContext('2d').drawImage(this.video, 0, 0, canvas.width, canvas.height);
+            a.href = canvas.toDataURL('image/jpeg');
+        } else if (this.video.poster && this.video.poster.startsWith('data:image/jpeg')) {
+            a.href = this.video.poster;
+        } else {
+            return;
+        }
 
         const ts = new Date().toISOString().substring(0, 19).replaceAll('-', '').replaceAll(':', '');
-        const a = document.createElement('a');
-        a.href = canvas.toDataURL('image/jpeg');
         a.download = `snapshot_${ts}.jpeg`;
         a.click();
     }
@@ -497,7 +512,13 @@ class WebRTCCamera extends VideoRTC {
                 fullscreen.icon = document.fullscreenElement ? 'mdi:fullscreen-exit' : 'mdi:fullscreen';
             });
         } else if (video.webkitEnterFullscreen) {
-            this.requestFullscreen = () => video.webkitEnterFullscreen();
+            this.requestFullscreen = () => new Promise((resolve, reject) => {
+                try {
+                    video.webkitEnterFullscreen();
+                } catch (e) {
+                    reject(e);
+                }
+            });
             video.addEventListener('webkitendfullscreen', () => {
                 setTimeout(() => this.play(), 1000); // fix bug in iOS
             });
@@ -576,32 +597,40 @@ class WebRTCCamera extends VideoRTC {
     renderShortcuts() {
         if (!this.config.shortcuts) return;
 
-        // backward compatibility with `services` property
-        const services = this.config.shortcuts.services || this.config.shortcuts;
-
-        const icons = services.map((value, index) => `
-            <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
-        `).join('');
-
         const card = this.querySelector('.card');
         card.insertAdjacentHTML('beforebegin', `
-        <style>
-            .shortcuts {
-                position: absolute;
-                top: 5px;
-                left: 5px;
-            }
-        </style>
+            <style>
+                .shortcuts {
+                    position: absolute;
+                    top: 5px;
+                    left: 5px;
+                }
+            </style>
         `);
-        card.insertAdjacentHTML('beforeend', `
-        <div class="shortcuts">${icons}</div>
-        `);
+        card.insertAdjacentHTML('beforeend', '<div class="shortcuts"></div>');
 
         const shortcuts = this.querySelector('.shortcuts');
         shortcuts.addEventListener('click', ev => {
-            const value = services[ev.target.dataset.index];
-            const [domain, name] = value.service.split('.');
-            this.hass.callService(domain, name, value.service_data || {});
+            const value = this.config.shortcuts[ev.target.dataset.index];
+            if (value.more_info !== undefined) {
+                const event = new Event('hass-more-info', {
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true,
+                });
+                event.detail = {entityId: value.more_info};
+                ev.target.dispatchEvent(event);
+            }
+            if (value.service !== undefined) {
+                const [domain, name] = value.service.split('.');
+                this.hass.callService(domain, name, value.service_data || {});
+            }
+        });
+
+        this.renderTemplate('shortcuts', () => {
+            shortcuts.innerHTML = this.config.shortcuts.map((value, index) => `
+                <ha-icon data-index="${index}" icon="${value.icon}" title="${value.name}"></ha-icon>
+            `).join('');
         });
     }
 
@@ -609,9 +638,34 @@ class WebRTCCamera extends VideoRTC {
         if (!this.config.style) return;
 
         const style = document.createElement('style');
-        style.innerText = this.config.style;
         const card = this.querySelector('.card');
         card.insertAdjacentElement('beforebegin', style);
+
+        this.renderTemplate('style', () => {
+            style.innerText = this.config.style;
+        });
+    }
+
+    renderTemplate(name, renderHTML) {
+        const config = this.config[name];
+        // support config param as string or as object
+        const template = typeof config === 'string' ? config : JSON.stringify(config);
+        // check if config param has template
+        if (template.indexOf('${') >= 0) {
+            const render = () => {
+                try {
+                    const states = this.hass ? this.hass.states : undefined;
+                    this.config[name] = JSON.parse(eval('`' + template + '`'));
+                    renderHTML();
+                } catch (e) {
+                    console.debug(e);
+                }
+            };
+            this.onhass.push(render);
+            render();
+        } else {
+            renderHTML();
+        }
     }
 
     get hasAudio() {

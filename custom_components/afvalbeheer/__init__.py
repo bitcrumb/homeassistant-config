@@ -1,10 +1,38 @@
 """
 Sensor component for waste pickup dates from dutch and belgium waste collectors
 Original Author: Pippijn Stortelder
-Current Version: 5.2.8 20230927
+Current Version: 5.4.3 20240918
 20230705 - Added support for Afval3xBeter
 20230822 - Fix icon for papier-pmd
 20230927 - Fix ZRD API
+20231206 - Fix suffix handling for Circulus
+20231208 - Fix naming of today and tomorrow sensors
+20231219 - Support for new API Assen
+20240109 - Add support for Woerden
+20240109 - Add support for RWM
+20240109 - Change dateobject to date
+20240122 - Add support for Montferland API
+20240124 - Update RecycleApp X-Secret
+20240124 - Add support for Ôffalkalinder
+20240201 - Revert change of dateobject
+20240201 - Fix for collection days duplicates
+20240215 - Better way to fix for collection days duplicates
+20240216 - Use correct case for fractions
+20240216 - Remove unwanted fractions from upcomming sensor
+20240325 - Added support for DeFryskeMarren
+20240325 - Fix spelling mistake in "Eerstvolgende"
+20240414 - Fix deprecation warning for discovery
+20240531 - Sort output of upcomming sensors
+20240605 - Fix for RWM API
+20240711 - Add mapping for PMD-Rest in Ximmio
+20240711 - Fix sensor icons
+20240827 - Add support for Cleanprofs
+20240827 - Small bug fix with configs
+20240829 - Support for new ROVA API
+20240906 - New option for custom mapping
+20240911 - Fix API url for Cyclus and Montfoort
+20240917 - Fix API url for RyclycleApp
+20240918 - Add support for Sliedrecht
 
 Example config:
 Configuration.yaml:
@@ -35,12 +63,13 @@ from homeassistant.const import Platform
 
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.typing import ConfigType
+from homeassistant.helpers.discovery import async_load_platform, load_platform
 
 from .const import DOMAIN, PLATFORM_SCHEMA, CONF_ID
 from .API import get_wastedata_from_config
 
 
-__version__ = "5.2.8"
+__version__ = "5.4.3"
 
 
 _LOGGER = logging.getLogger(__name__)
@@ -63,12 +92,12 @@ async def async_setup(hass: HomeAssistant, config: ConfigType):
 
         hass.data.setdefault(DOMAIN, {})[conf[CONF_ID]] = data
 
-        await hass.helpers.discovery.async_load_platform(
-            Platform.SENSOR, DOMAIN, {"config": conf}, conf
+        await async_load_platform(
+            hass, Platform.SENSOR, DOMAIN, {"config": conf}, conf
         )
 
-        hass.helpers.discovery.load_platform(
-            Platform.CALENDAR, DOMAIN, {"config": conf}, conf
+        load_platform(
+            hass, Platform.CALENDAR, DOMAIN, {"config": conf}, conf
         )
 
         await data.schedule_update(timedelta())

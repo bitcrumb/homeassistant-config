@@ -11,20 +11,21 @@ from typing import Optional
 from urllib.parse import urljoin
 
 import jwt
+import requests
 from aiohttp import web
-from homeassistant.components.camera import Camera
 from homeassistant.components.frontend import add_extra_js_url
 from homeassistant.components.http.auth import DATA_SIGN_SECRET, SIGN_QUERY_PARAM
 from homeassistant.components.lovelace.resources import ResourceStorageCollection
+from homeassistant.const import MAJOR_VERSION, MINOR_VERSION
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.aiohttp_client import async_get_clientsession
-from homeassistant.helpers.entity_component import EntityComponent, DATA_INSTANCES
+from homeassistant.helpers.entity_component import DATA_INSTANCES
 
 _LOGGER = logging.getLogger(__name__)
 
 DOMAIN = "webrtc"
 
-BINARY_VERSION = "1.8.1"
+BINARY_VERSION = "1.9.4"
 
 SYSTEM = {
     "Windows": {"AMD64": "go2rtc_win64.zip", "ARM64": "go2rtc_win_arm64.zip"},
@@ -62,14 +63,19 @@ def unzip(content: bytes) -> bytes:
                 return f.read()
 
 
-async def validate_binary(hass: HomeAssistant) -> Optional[str]:
+def validate_binary(hass: HomeAssistant) -> Optional[str]:
     filename = f"go2rtc-{BINARY_VERSION}"
     if platform.system() == "Windows":
         filename += ".exe"
 
     filename = hass.config.path(filename)
-    if os.path.isfile(filename) and os.access(filename, os.X_OK):
-        return filename
+    try:
+        if os.path.isfile(filename) and subprocess.check_output(
+            [filename, "-v"]
+        ).startswith(b"go2rtc"):
+            return filename
+    except:
+        pass
 
     # remove all old binaries
     for file in os.listdir(hass.config.config_dir):
@@ -83,11 +89,11 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
         f"v{BINARY_VERSION}/{get_arch()}"
     )
     _LOGGER.debug(f"Download new binary: {url}")
-    r = await async_get_clientsession(hass).get(url)
+    r = requests.get(url)
     if not r.ok:
         return None
 
-    raw = await r.read()
+    raw = r.content
 
     # unzip binary for windows
     if url.endswith(".zip"):
@@ -103,27 +109,15 @@ async def validate_binary(hass: HomeAssistant) -> Optional[str]:
     return filename
 
 
-# noinspection PyTypeChecker
-async def get_stream_source(hass: HomeAssistant, entity: str) -> str:
-    try:
-        component: EntityComponent = hass.data["camera"]
-        camera: Camera = next(e for e in component.entities if e.entity_id == entity)
-        return await camera.stream_source()
-    except Exception:
-        return None
+async def register_static_path(hass: HomeAssistant, url_path: str, path: str):
+    if (MAJOR_VERSION, MINOR_VERSION) >= (2024, 7):
+        from homeassistant.components.http import StaticPathConfig
 
-
-def register_static_path(app: web.Application, url_path: str, path):
-    """Register static path with CORS for Chromecast"""
-
-    async def serve_file(request):
-        return web.FileResponse(path)
-
-    route = app.router.add_route("GET", url_path, serve_file)
-    if "allow_all_cors" in app:
-        app["allow_all_cors"](route)
-    elif "allow_cors" in app:
-        app["allow_cors"](route)
+        await hass.http.async_register_static_paths(
+            [StaticPathConfig(url_path, path, True)]
+        )
+    else:
+        hass.http.register_static_path(url_path, path)
 
 
 async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
@@ -169,29 +163,24 @@ async def init_resource(hass: HomeAssistant, url: str, ver: str) -> bool:
 
 
 # noinspection PyProtectedMember
-def dash_cast(hass: HomeAssistant, cast_entities: list, url: str, force=False):
+def dash_cast(hass: HomeAssistant, entities: list, url: str, force: bool):
     """Cast webpage to chromecast device via DashCast application."""
     try:
-        entities = [
-            e
-            for e in hass.data[DATA_INSTANCES]["media_player"].entities
-            if e.entity_id in cast_entities and getattr(e, "_chromecast", 0)
-        ]
-        if not entities:
-            _LOGGER.warning(f"Can't find {cast_entities} for DashCast")
-
-        for entity in entities:
-            from pychromecast.controllers.dashcast import DashCastController
+        for entity in hass.data[DATA_INSTANCES]["media_player"].entities:
+            if entity.entity_id not in entities or not hasattr(entity, "_chromecast"):
+                continue
 
             if not hasattr(entity, "dashcast"):
+                from pychromecast.controllers.dashcast import DashCastController
+
                 entity.dashcast = DashCastController()
                 entity._chromecast.register_handler(entity.dashcast)
 
             _LOGGER.debug(f"DashCast to {entity.entity_id}")
-            entity.dashcast.load_url(url, force)
+            entity.dashcast.load_url(url, force=force)
 
-    except Exception:
-        _LOGGER.exception(f"Can't DashCast to {cast_entities}")
+    except Exception as e:
+        _LOGGER.error(f"Can't DashCast to {entities}", exc_info=e)
 
 
 def validate_signed_request(request: web.Request) -> bool:

@@ -1,4 +1,5 @@
-"""Spook - Not your homie."""
+"""Spook - Your homie."""
+
 from __future__ import annotations
 
 from homeassistant.components import sensor
@@ -8,6 +9,7 @@ from homeassistant.helpers.entity_platform import DATA_ENTITY_PLATFORM, EntityPl
 
 from ....const import LOGGER
 from ....repairs import AbstractSpookRepair
+from ....util import async_get_all_entity_ids
 
 
 class SpookRepair(AbstractSpookRepair):
@@ -18,8 +20,11 @@ class SpookRepair(AbstractSpookRepair):
     inspect_events = {
         EVENT_COMPONENT_LOADED,
         er.EVENT_ENTITY_REGISTRY_UPDATED,
-        "event_integration_reloaded",
     }
+    inspect_config_entry_changed = True
+    inspect_on_reload = "integration"
+
+    automatically_clean_up_issues = True
 
     async def async_inspect(self) -> None:
         """Trigger a inspection."""
@@ -29,9 +34,7 @@ class SpookRepair(AbstractSpookRepair):
         if not (platforms := self.hass.data[DATA_ENTITY_PLATFORM].get(self.domain)):
             return  # Nothing to do.
 
-        entity_ids = {
-            entity.entity_id for entity in self.entity_registry.entities.values()
-        }.union(self.hass.states.async_entity_ids())
+        known_entity_ids = async_get_all_entity_ids(self.hass)
 
         for platform in platforms:
             # We only care about the sensor domain
@@ -39,9 +42,10 @@ class SpookRepair(AbstractSpookRepair):
                 continue
 
             for entity in platform.entities.values():
+                self.possible_issue_ids.add(entity.entity_id)
                 # pylint: disable-next=protected-access
                 source = entity._sensor_source_id  # noqa: SLF001
-                if source not in entity_ids:
+                if source not in known_entity_ids:
                     self.async_create_issue(
                         issue_id=entity.entity_id,
                         translation_placeholders={
@@ -56,5 +60,3 @@ class SpookRepair(AbstractSpookRepair):
                         source,
                         entity.entity_id,
                     )
-                else:
-                    self.async_delete_issue(entity.entity_id)

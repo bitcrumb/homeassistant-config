@@ -1,13 +1,16 @@
-"""Spook - Not your homie. Custom integration for Home Assistant."""
+"""Spook - Your homie. Custom integration for Home Assistant."""
+
 from __future__ import annotations
 
 import asyncio
 from typing import TYPE_CHECKING
 
-from homeassistant.const import RESTART_EXIT_CODE
-from homeassistant.core import (
+from homeassistant.const import (
     EVENT_HOMEASSISTANT_START,
     EVENT_HOMEASSISTANT_STARTED,
+    RESTART_EXIT_CODE,
+)
+from homeassistant.core import (
     CoreState,
     callback,
 )
@@ -16,7 +19,13 @@ from homeassistant.helpers import issue_registry as ir
 from .const import DOMAIN, LOGGER, PLATFORMS
 from .repairs import SpookRepairManager
 from .services import SpookServiceManager
-from .util import link_sub_integrations, unlink_sub_integrations
+from .templating import SpookTemplateFunctionManager
+from .util import (
+    async_ensure_template_environments_exists,
+    async_forward_setup_entry,
+    link_sub_integrations,
+    unlink_sub_integrations,
+)
 
 if TYPE_CHECKING:
     from homeassistant.config_entries import ConfigEntry
@@ -68,8 +77,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             translation_key="restart_required",
         )
 
-    # Set up platforms
-    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
+    # Ensure template environments exists
+    async_ensure_template_environments_exists(hass)
+
+    # Forward async_setup_entry to ectoplasms
+    await async_forward_setup_entry(hass, entry)
+
+    # Set up templating
+    templating = SpookTemplateFunctionManager(hass)
+    await templating.async_setup()
+    entry.async_on_unload(templating.async_on_unload)
 
     # Set up services
     services = SpookServiceManager(hass)
@@ -88,6 +105,9 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     entry.async_on_unload(
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _ghost_busters),
     )
+
+    # Set up platforms
+    await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
     # Yay, we didn't got spooked!
     return True

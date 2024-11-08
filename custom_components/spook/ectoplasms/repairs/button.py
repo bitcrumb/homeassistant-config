@@ -1,4 +1,5 @@
-"""Spook - Not your homie."""
+"""Spook - Your homie."""
+
 from __future__ import annotations
 
 from dataclasses import dataclass
@@ -17,20 +18,14 @@ if TYPE_CHECKING:
     from homeassistant.helpers.entity_platform import AddEntitiesCallback
 
 
-@dataclass
-class RepairsSpookButtonEntityDescriptionMixin:
-    """Mixin values for Repairs related buttons."""
-
-    ignore: bool
-
-
-@dataclass
+@dataclass(frozen=True, kw_only=True)
 class RepairsSpookButtonEntityDescription(
     SpookEntityDescription,
     ButtonEntityDescription,
-    RepairsSpookButtonEntityDescriptionMixin,
 ):
     """Class describing Spook Repairs button entities."""
+
+    ignore: bool
 
 
 BUTTONS: tuple[RepairsSpookButtonEntityDescription, ...] = (
@@ -63,7 +58,7 @@ async def async_setup_entry(
 
 
 class RepairsSpookButtonEntity(RepairsSpookEntity, ButtonEntity):
-    """Spook button providig Repairs actions."""
+    """Spook button providing Repairs actions."""
 
     entity_description: RepairsSpookButtonEntityDescription
 

@@ -1,11 +1,12 @@
 """ Smartthings TV integration """
 
+from __future__ import annotations
+
 from asyncio import TimeoutError as AsyncTimeoutError
 from datetime import timedelta
 from enum import Enum
 import json
 import logging
-from typing import Dict, List, Optional
 
 from aiohttp import ClientConnectionError, ClientResponseError, ClientSession
 
@@ -17,25 +18,86 @@ API_DEVICES = f"{API_BASEURL}/devices"
 DEVICE_TYPE_OCF = "OCF"
 DEVICE_TYPE_NAME_TV = "Samsung OCF TV"
 
-COMMAND_POWER_OFF = {"capability": "switch", "command": "off"}
-COMMAND_POWER_ON = {"capability": "switch", "command": "on"}
-COMMAND_REFRESH = {"capability": "refresh", "command": "refresh"}
-COMMAND_SET_SOURCE = {"capability": "mediaInputSource", "command": "setInputSource"}
-COMMAND_MUTE = {"capability": "audioMute", "command": "mute"}
-COMMAND_UNMUTE = {"capability": "audioMute", "command": "unmute"}
-COMMAND_VOLUME_UP = {"capability": "audioVolume", "command": "volumeUp"}
-COMMAND_VOLUME_DOWN = {"capability": "audioVolume", "command": "volumeDown"}
-COMMAND_SET_VOLUME = {"capability": "audioVolume", "command": "setVolume"}
-COMMAND_CHANNEL_UP = {"capability": "tvChannel", "command": "channelUp"}
-COMMAND_CHANNEL_DOWN = {"capability": "tvChannel", "command": "channelDown"}
-COMMAND_SET_CHANNEL = {"capability": "tvChannel", "command": "setTvChannel"}
-COMMAND_PAUSE = {"capability": "mediaPlayback", "command": "pause"}
-COMMAND_PLAY = {"capability": "mediaPlayback", "command": "play"}
-COMMAND_STOP = {"capability": "mediaPlayback", "command": "stop"}
-COMMAND_FAST_FORWARD = {"capability": "mediaPlayback", "command": "fastForward"}
-COMMAND_REWIND = {"capability": "mediaPlayback", "command": "rewind"}
-COMMAND_SOUND_MODE = {"capability": "custom.soundmode", "command": "setSoundMode"}
-COMMAND_PICTURE_MODE = {"capability": "custom.picturemode", "command": "setPictureMode"}
+COMMAND_POWER_OFF = {
+    "capability": "switch",
+    "command": "off",
+}
+COMMAND_POWER_ON = {
+    "capability": "switch",
+    "command": "on",
+}
+COMMAND_REFRESH = {
+    "capability": "refresh",
+    "command": "refresh",
+}
+COMMAND_SET_SOURCE = {
+    "capability": "mediaInputSource",
+    "command": "setInputSource",
+}
+COMMAND_SET_VD_SOURCE = {
+    "capability": "samsungvd.mediaInputSource",
+    "command": "setInputSource",
+}
+COMMAND_MUTE = {
+    "capability": "audioMute",
+    "command": "mute",
+}
+COMMAND_UNMUTE = {
+    "capability": "audioMute",
+    "command": "unmute",
+}
+COMMAND_VOLUME_UP = {
+    "capability": "audioVolume",
+    "command": "volumeUp",
+}
+COMMAND_VOLUME_DOWN = {
+    "capability": "audioVolume",
+    "command": "volumeDown",
+}
+COMMAND_SET_VOLUME = {
+    "capability": "audioVolume",
+    "command": "setVolume",
+}
+COMMAND_CHANNEL_UP = {
+    "capability": "tvChannel",
+    "command": "channelUp",
+}
+COMMAND_CHANNEL_DOWN = {
+    "capability": "tvChannel",
+    "command": "channelDown",
+}
+COMMAND_SET_CHANNEL = {
+    "capability": "tvChannel",
+    "command": "setTvChannel",
+}
+COMMAND_PAUSE = {
+    "capability": "mediaPlayback",
+    "command": "pause",
+}
+COMMAND_PLAY = {
+    "capability": "mediaPlayback",
+    "command": "play",
+}
+COMMAND_STOP = {
+    "capability": "mediaPlayback",
+    "command": "stop",
+}
+COMMAND_FAST_FORWARD = {
+    "capability": "mediaPlayback",
+    "command": "fastForward",
+}
+COMMAND_REWIND = {
+    "capability": "mediaPlayback",
+    "command": "rewind",
+}
+COMMAND_SOUND_MODE = {
+    "capability": "custom.soundmode",
+    "command": "setSoundMode",
+}
+COMMAND_PICTURE_MODE = {
+    "capability": "custom.picturemode",
+    "command": "setPictureMode",
+}
 
 DIGITAL_TV = "digitalTv"
 
@@ -43,7 +105,7 @@ MIN_TIME_BETWEEN_UPDATES = timedelta(seconds=10)
 _LOGGER = logging.getLogger(__name__)
 
 
-def _headers(api_key: str) -> Dict[str, str]:
+def _headers(api_key: str) -> dict[str, str]:
     return {
         "Authorization": f"Bearer {api_key}",
         "Accept": "application/json",
@@ -51,12 +113,12 @@ def _headers(api_key: str) -> Dict[str, str]:
     }
 
 
-def _command(command: Dict, arguments: Optional[List] = None):
-    cmd = {"commands": [{"component": "main"}]}
-    cmd["commands"][0].update(command)
+def _command(command: dict, arguments: list | None = None):
+    cmd = {"component": "main", **command}
     if arguments:
-        cmd["commands"][0]["arguments"] = arguments
-    return str(cmd)
+        cmd["arguments"] = arguments
+    cmd_full = {"commands": [cmd]}
+    return str(cmd_full)
 
 
 class STStatus(Enum):
@@ -75,7 +137,7 @@ class SmartThingsTV:
         api_key: str,
         device_id: str,
         use_channel_info: bool = True,
-        session: Optional[ClientSession] = None,
+        session: ClientSession | None = None,
     ):
         """Initialize SmartThingsTV."""
         self._api_key = api_key
@@ -206,6 +268,19 @@ class SmartThingsTV:
             if map_id and map_id == source_id:
                 return map_value.get("name", "")
         return ""
+
+    def _get_source_list_from_map(self) -> list:
+        """Return source list from source map."""
+        if not self._source_list_map:
+            return []
+        source_list = []
+        for map_value in self._source_list_map:
+            if source_id := map_value.get("id"):
+                if source_id.upper() == "DTV":
+                    source_list.append(DIGITAL_TV)
+                else:
+                    source_list.append(source_id)
+        return source_list
 
     def set_application(self, app_id):
         """Set running application info."""
@@ -416,10 +491,11 @@ class SmartThingsTV:
         )
 
         # Sources and channel
-        self._source_list = self._load_json_list(dev_data, "supportedInputSources")
         self._source_list_map = self._load_json_list(
             dev_data, "supportedInputSourcesMap"
         )
+        # self._source_list = self._load_json_list(dev_data, "supportedInputSources")
+        self._source_list = self._get_source_list_from_map()
 
         if self._is_forced_val and self._forced_count <= 0:
             self._forced_count += 1
@@ -488,6 +564,13 @@ class SmartThingsTV:
         data_cmd = _command(COMMAND_SET_SOURCE, [source])
         # set property to reflect new changes
         self._set_source(source)
+        await self._async_send_command(data_cmd)
+
+    async def async_select_vd_source(self, source):
+        """Select source"""
+        # if source not in self._source_list:
+        #     return
+        data_cmd = _command(COMMAND_SET_VD_SOURCE, [source])
         await self._async_send_command(data_cmd)
 
     async def async_set_sound_mode(self, mode):

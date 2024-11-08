@@ -1,40 +1,47 @@
 from __future__ import annotations
 
-import asyncio
-from datetime import timedelta
-from multiprocessing import AuthenticationError
-from aiohttp import ClientError
-import pandas as pd
-from entsoe import EntsoePandasClient
-from entsoe.exceptions import NoMatchingDataError
-from requests.exceptions import HTTPError
-
 import logging
+from datetime import datetime, timedelta
 
-from datetime import datetime
-
+import homeassistant.helpers.config_validation as cv
 from homeassistant.core import HomeAssistant
+from homeassistant.helpers.template import Template
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator, UpdateFailed
 from homeassistant.util import dt
-import homeassistant.helpers.config_validation as cv
-from homeassistant.helpers.template import Template, attach
 from jinja2 import pass_context
+from requests.exceptions import HTTPError
 
-from .const import DEFAULT_MODIFYER, AREA_INFO, CALCULATION_MODE
+from .api_client import EntsoeClient
+from .const import AREA_INFO, CALCULATION_MODE, DEFAULT_MODIFYER, ENERGY_SCALES
+
+# depending on timezone les than 24 hours could be returned.
+MIN_HOURS = 20
 
 
 class EntsoeCoordinator(DataUpdateCoordinator):
     """Get the latest data and update the states."""
 
-    def __init__(self, hass: HomeAssistant, api_key, area, modifyer, calculation_mode = CALCULATION_MODE["default"], VAT = 0) -> None:
+    def __init__(
+        self,
+        hass: HomeAssistant,
+        api_key,
+        area,
+        energy_scale,
+        modifyer,
+        calculation_mode=CALCULATION_MODE["default"],
+        VAT=0,
+    ) -> None:
         """Initialize the data object."""
         self.hass = hass
         self.api_key = api_key
         self.modifyer = modifyer
         self.area = AREA_INFO[area]["code"]
+        self.energy_scale = energy_scale
         self.calculation_mode = calculation_mode
         self.vat = VAT
-
+        self.today = None
+        self.calculator_last_sync = None
+        self.filtered_hourprices = []
 
         # Check incase the sensor was setup using config flow.
         # This blow up if the template isnt valid.
@@ -47,8 +54,6 @@ class EntsoeCoordinator(DataUpdateCoordinator):
             if self.modifyer.template in ("", None):
                 self.modifyer = cv.template(DEFAULT_MODIFYER)
 
-        attach(self.hass, self.modifyer)
-
         logger = logging.getLogger(__name__)
         super().__init__(
             hass,
@@ -57,15 +62,16 @@ class EntsoeCoordinator(DataUpdateCoordinator):
             update_interval=timedelta(minutes=60),
         )
 
+    # calculate the price using the given template
     def calc_price(self, value, fake_dt=None, no_template=False) -> float:
         """Calculate price based on the users settings."""
         # Used to inject the current hour.
         # so template can be simplified using now
         if no_template:
-            price = round(value / 1000, 5)
+            price = round(value / ENERGY_SCALES[self.energy_scale], 5)
             return price
 
-        price = value / 1000
+        price = value / ENERGY_SCALES[self.energy_scale]
         if fake_dt is not None:
 
             def faker():
@@ -74,7 +80,9 @@ class EntsoeCoordinator(DataUpdateCoordinator):
 
                 return pass_context(inner)
 
-            template_value = self.modifyer.async_render(now=faker(), current_price=price)
+            template_value = self.modifyer.async_render(
+                now=faker(), current_price=price
+            )
         else:
             template_value = self.modifyer.async_render()
 
@@ -87,49 +95,44 @@ class EntsoeCoordinator(DataUpdateCoordinator):
             hourprices[hour] = self.calc_price(value=price, fake_dt=hour)
         return hourprices
 
+    # Called by HA every refresh interval (60 minutes)
     async def _async_update_data(self) -> dict:
         """Get the latest data from ENTSO-e"""
-        self.logger.debug("Fetching ENTSO-e data")
+        self.logger.debug("ENTSO-e DataUpdateCoordinator data update")
         self.logger.debug(self.area)
 
-        time_zone = dt.now().tzinfo
-        # We request data for yesterday up until tomorrow.
-        yesterday = pd.Timestamp.now(tz=str(time_zone)).replace(hour=0, minute=0, second=0) - pd.Timedelta(days = 1)
-        tomorrow = yesterday + pd.Timedelta(hours = 71)
+        now = dt.now()
+        self.today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+        if self.check_update_needed(now) is False:
+            self.logger.debug(f"Skipping api fetch. All data is already available")
+            return self.data
 
-        data = await self.fetch_prices(yesterday, tomorrow)
+        yesterday = self.today - timedelta(days=1)
+        tomorrow_evening = yesterday + timedelta(hours=71)
+
+        self.logger.debug(
+            f"fetching prices for start date: {yesterday} to end date: {tomorrow_evening}"
+        )
+        data = await self.fetch_prices(yesterday, tomorrow_evening)
+        self.logger.debug(f"received data = {data}")
+
         if data is not None:
             parsed_data = self.parse_hourprices(data)
-            data_all = parsed_data[-48:].to_dict()
-            if parsed_data.size > 48:
-                data_today = parsed_data[-48:-24].to_dict()
-                data_tomorrow = parsed_data[-24:].to_dict()
-            else:
-                data_today = parsed_data[-24:].to_dict()
-                data_tomorrow = {}
+            self.logger.debug(
+                f"received pricing data from entso-e for {len(data)} hours"
+            )
+            self.data = parsed_data
+            self.filtered_hourprices = self._filter_calculated_hourprices(parsed_data)
+            return parsed_data
 
-            return {
-                "data": data_all,
-                "dataToday": data_today,
-                "dataTomorrow": data_tomorrow,
-            }
-        elif self.data is not None:
-            newest_timestamp_today = pd.Timestamp(list(self.data["dataToday"])[-1])
-            if any(self.data["dataTomorrow"]) and newest_timestamp_today < pd.Timestamp.now(newest_timestamp_today.tzinfo):
-                self.data["dataToday"] = self.data["dataTomorrow"]
-                self.data["dataTomorrow"] = {}
-                data_list = list(self.data["data"])
-                new_data_dict = {}
-                if len(data_list) >= 24:
-                    for hour, price in self.data["data"].items()[-24:]:
-                        new_data_dict[hour] = price
-                    self.data["data"] = new_data_dict
-
-            return {
-                "data": self.data["data"],
-                "dataToday": self.data["dataToday"],
-                "dataTomorrow": self.data["dataTomorrow"],
-            }
+    def check_update_needed(self, now):
+        if self.data is None:
+            return True
+        if len(self.get_data_today()) < MIN_HOURS:
+            return True
+        if len(self.get_data_tomorrow()) < MIN_HOURS and now.hour > 11:
+            return True
+        return False
 
     async def fetch_prices(self, start_date, end_date):
         try:
@@ -137,86 +140,160 @@ class EntsoeCoordinator(DataUpdateCoordinator):
             resp = await self.hass.async_add_executor_job(
                 self.api_update, start_date, end_date, self.api_key
             )
-
             return resp
 
-        except (HTTPError) as exc:
+        except HTTPError as exc:
             if exc.response.status_code == 401:
                 raise UpdateFailed("Unauthorized: Please check your API-key.") from exc
         except Exception as exc:
             if self.data is not None:
-                newest_timestamp = pd.Timestamp(list(self.data["data"])[-1])
-                if(newest_timestamp) > pd.Timestamp.now(newest_timestamp.tzinfo):
-                    self.logger.warning(f"Warning the integration is running in degraded mode (falling back on stored data) since fetching the latest ENTSOE-e prices failed with exception: {exc}.")
+                newest_timestamp = self.data[max(self.data.keys())]
+                if (newest_timestamp) > dt.now():
+                    self.logger.warning(
+                        f"Warning the integration is running in degraded mode (falling back on stored data) since fetching the latest ENTSOE-e prices failed with exception: {exc}."
+                    )
                 else:
-                    self.logger.error(f"Error the latest available data is older than the current time. Therefore entities will no longer update. {exc}")
-                    raise UpdateFailed(f"Unexcpected error when fetching ENTSO-e prices: {exc}") from exc
+                    raise UpdateFailed(
+                        f"The latest available data is older than the current time. Therefore entities will no longer update. Error: {exc}"
+                    ) from exc
             else:
-                self.logger.warning(f"Warning the integration doesn't have any up to date local data this means that entities won't get updated but access remains to restorable entities: {exc}.")
-
-
+                self.logger.warning(
+                    f"Warning the integration doesn't have any up to date local data this means that entities won't get updated but access remains to restorable entities: {exc}."
+                )
 
     def api_update(self, start_date, end_date, api_key):
-        client = EntsoePandasClient(api_key=api_key)
+        client = EntsoeClient(api_key=api_key)
         return client.query_day_ahead_prices(
             country_code=self.area, start=start_date, end=end_date
         )
 
+    async def get_energy_prices(self, start_date, end_date):
+        # check if we have the data already
+        if (
+            len(self.get_data(start_date)) > MIN_HOURS
+            and len(self.get_data(end_date)) > MIN_HOURS
+        ):
+            self.logger.debug(f"return prices from coordinator cache.")
+            return {
+                k: v
+                for k, v in self.data.items()
+                if k.date() >= start_date.date() and k.date() <= end_date.date()
+            }
+        return self.parse_hourprices(await self.fetch_prices(start_date, end_date))
 
-    def processed_data(self):
-        filtered_hourprices = self._filter_calculated_hourprices(self.data)
+    def today_data_available(self):
+        return len(self.get_data_today()) > MIN_HOURS
+
+    # this method is called by each sensor, each complete hour, and ensures the date and filtered hourprices are in line with the current time
+    # we could still optimize as not every calculator mode needs hourly updates
+    def sync_calculator(self):
+        now = dt.now()
+        if (
+            self.calculator_last_sync is None
+            or self.calculator_last_sync.hour != now.hour
+        ):
+            self.logger.debug(
+                f"The calculator needs to be synced with the current time"
+            )
+            if self.today.date() != now.date():
+                self.logger.debug(
+                    f"new day detected: update today and filtered hourprices"
+                )
+                self.today = now.replace(hour=0, minute=0, second=0, microsecond=0)
+            self.filtered_hourprices = self._filter_calculated_hourprices(self.data)
+
+        self.calculator_last_sync = now
+
+    def _filter_calculated_hourprices(self, data):
+        # rotation = calculations made upon 24hrs today
+        if self.calculation_mode == CALCULATION_MODE["rotation"]:
+            return {
+                hour: price
+                for hour, price in data.items()
+                if hour >= self.today and hour < self.today + timedelta(days=1)
+            }
+        # sliding = calculations made on all data from the current hour and beyond (future data only)
+        elif self.calculation_mode == CALCULATION_MODE["sliding"]:
+            now = dt.now().replace(minute=0, second=0, microsecond=0)
+            return {hour: price for hour, price in data.items() if hour >= now}
+        # publish >48 hrs of data = calculations made on all data of today and tomorrow (48 hrs)
+        elif self.calculation_mode == CALCULATION_MODE["publish"] and len(data) > 48:
+            return {hour: price for hour, price in data.items() if hour >= self.today}
+        # publish <=48 hrs of data = calculations made on all data of yesterday and today (48 hrs)
+        elif self.calculation_mode == CALCULATION_MODE["publish"]:
+            return {
+                hour: price
+                for hour, price in data.items()
+                if hour >= self.today - timedelta(days=1)
+            }
+
+    def get_prices_today(self):
+        return self.get_timestamped_prices(self.get_data_today())
+
+    def get_prices_tomorrow(self):
+        return self.get_timestamped_prices(self.get_data_tomorrow())
+
+    def get_prices(self):
+        if len(self.data) > 48:
+            return self.get_timestamped_prices(
+                {hour: price for hour, price in self.data.items() if hour >= self.today}
+            )
+        return self.get_timestamped_prices(
+            {
+                hour: price
+                for hour, price in self.data.items()
+                if hour >= self.today - timedelta(days=1)
+            }
+        )
+
+    def get_data(self, date):
+        return {k: v for k, v in self.data.items() if k.date() == date.date()}
+
+    def get_data_today(self):
+        return {k: v for k, v in self.data.items() if k.date() == self.today.date()}
+
+    def get_data_tomorrow(self):
         return {
-            "current_price": self.get_current_hourprice(self.data["data"]),
-            "next_hour_price": self.get_next_hourprice(self.data["data"]),
-            "min_price": self.get_min_price(filtered_hourprices),
-            "max_price": self.get_max_price(filtered_hourprices),
-            "avg_price": self.get_avg_price(filtered_hourprices),
-            "time_min": self.get_min_time(filtered_hourprices),
-            "time_max": self.get_max_time(filtered_hourprices),
-            "prices_today": self.get_timestamped_prices(self.data["dataToday"]),
-            "prices_tomorrow": self.get_timestamped_prices(self.data["dataTomorrow"]),
-            "prices": self.get_timestamped_prices(self.data["data"]),
+            k: v
+            for k, v in self.data.items()
+            if k.date() == self.today.date() + timedelta(days=1)
         }
 
-    def _filter_calculated_hourprices(self, data) -> list:
-        time_zone = dt.now().tzinfo
-        hourprices = data["data"]
-        if self.calculation_mode == CALCULATION_MODE["rotation"]:
-            now = pd.Timestamp.now(tz=str(time_zone)).replace(hour=0, minute=0, second=0, microsecond=0)
-            return { hour: price for hour, price in hourprices.items() if pd.to_datetime(hour) >= now and pd.to_datetime(hour) < now + timedelta(days=1) }
-        elif self.calculation_mode == CALCULATION_MODE["sliding"]:
-            now = pd.Timestamp.now(tz=str(time_zone)).replace(minute=0, second=0, microsecond=0)
-            return { hour: price for hour, price in hourprices.items() if pd.to_datetime(hour) >= now }
-        elif self.calculation_mode == CALCULATION_MODE["publish"]:
-            return data["data"]
+    def get_next_hourprice(self) -> int:
+        return self.data[
+            dt.now().replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+        ]
 
-    def get_next_hourprice(self, hourprices) -> int:
-        for hour, price in hourprices.items():
-            if hour - timedelta(hours=1) <= dt.utcnow() < hour:
-                return price
+    def get_current_hourprice(self) -> int:
+        return self.data[dt.now().replace(minute=0, second=0, microsecond=0)]
 
-    def get_current_hourprice(self, hourprices) -> int:
-        for hour, price in hourprices.items():
-            if hour <= dt.utcnow() < hour + timedelta(hours=1):
-                return price
+    def get_avg_price(self):
+        return round(
+            sum(self.filtered_hourprices.values())
+            / len(self.filtered_hourprices.values()),
+            5,
+        )
 
-    def get_hourprices(self, hourprices) -> list:
-        return [a for a in hourprices.values()]
+    def get_max_price(self):
+        return max(self.filtered_hourprices.values())
 
-    def get_avg_price(self, hourprices):
-        return round(sum(hourprices.values()) / len(hourprices.values()), 5)
+    def get_min_price(self):
+        return min(self.filtered_hourprices.values())
 
-    def get_max_price(self, hourprices):
-        return max(hourprices.values())
+    def get_max_time(self):
+        return max(self.filtered_hourprices, key=self.filtered_hourprices.get)
 
-    def get_min_price(self, hourprices):
-        return min(hourprices.values())
+    def get_min_time(self):
+        return min(self.filtered_hourprices, key=self.filtered_hourprices.get)
 
-    def get_max_time(self, hourprices):
-        return max(hourprices, key=hourprices.get)
+    def get_percentage_of_max(self):
+        return round(self.get_current_hourprice() / self.get_max_price() * 100, 1)
 
-    def get_min_time(self, hourprices):
-        return min(hourprices, key=hourprices.get)
+    def get_percentage_of_range(self):
+        min = self.get_min_price()
+        spread = self.get_max_price() - min
+        current = self.get_current_hourprice() - min
+        return round(current / spread * 100, 1)
 
     def get_timestamped_prices(self, hourprices):
         list = []

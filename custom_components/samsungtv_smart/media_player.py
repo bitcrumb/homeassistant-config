@@ -1,4 +1,5 @@
 """Support for interface with an Samsung TV."""
+
 from __future__ import annotations
 
 import asyncio
@@ -36,8 +37,6 @@ from homeassistant.const import (
     CONF_BROADCAST_ADDRESS,
     CONF_DEVICE_ID,
     CONF_HOST,
-    CONF_MAC,
-    CONF_NAME,
     CONF_PORT,
     CONF_SERVICE,
     CONF_SERVICE_DATA,
@@ -58,7 +57,6 @@ from homeassistant.helpers.storage import STORAGE_DIR
 from homeassistant.util import Throttle, dt as dt_util
 from homeassistant.util.async_ import run_callback_threadsafe
 
-from . import SamsungTVDeviceInfo
 from .api.samsungcast import SamsungCastTube
 from .api.samsungws import ArtModeStatus, SamsungTVAsyncRest, SamsungTVWS
 from .api.smartthings import SmartThingsTV, STStatus
@@ -84,8 +82,7 @@ from .const import (
     CONF_USE_ST_STATUS_INFO,
     CONF_WOL_REPEAT,
     CONF_WS_NAME,
-    DATA_CFG_YAML,
-    DATA_DEV_INFO,
+    DATA_CFG,
     DATA_OPTIONS,
     DEFAULT_APP,
     DEFAULT_PORT,
@@ -103,6 +100,7 @@ from .const import (
     AppLoadMethod,
     PowerOnMethod,
 )
+from .entity import SamsungTVEntity
 from .logo import LOGO_OPTION_DEFAULT, LocalImageUrl, Logo, LogoOption
 
 ATTR_ART_MODE_STATUS = "art_mode_status"
@@ -165,16 +163,8 @@ async def async_setup_entry(
     # session used by aiohttp
     session = async_get_clientsession(hass)
     local_logo_path = hass.data[DOMAIN].get(LOCAL_LOGO_PATH)
-    dev_info: SamsungTVDeviceInfo = hass.data[DOMAIN][entry.entry_id][DATA_DEV_INFO]
+    config = hass.data[DOMAIN][entry.entry_id][DATA_CFG]
 
-    config = entry.data.copy()
-    add_conf = hass.data[DOMAIN][entry.entry_id].get(DATA_CFG_YAML, {})
-    for attr, value in add_conf.items():
-        if value:
-            config[attr] = value
-
-    hostname = config[CONF_HOST]
-    port = config.get(CONF_PORT, DEFAULT_PORT)
     logo_file = hass.config.path(STORAGE_DIR, f"{DOMAIN}_logo_paths")
 
     def update_token_func(token: str) -> None:
@@ -187,7 +177,7 @@ async def async_setup_entry(
         [
             SamsungTVDevice(
                 config,
-                dev_info,
+                entry.entry_id,
                 hass.data[DOMAIN][entry.entry_id],
                 session,
                 update_token_func,
@@ -209,13 +199,6 @@ async def async_setup_entry(
         SERVICE_SET_ART_MODE,
         {},
         "async_set_art_mode",
-    )
-
-    _LOGGER.info(
-        "Samsung TV %s:%d added as '%s'",
-        hostname,
-        port,
-        config.get(CONF_NAME, hostname),
     )
 
 
@@ -243,17 +226,16 @@ class ArtModeSupport(Enum):
     FULL = 2
 
 
-class SamsungTVDevice(MediaPlayerEntity):
+class SamsungTVDevice(SamsungTVEntity, MediaPlayerEntity):
     """Representation of a Samsung TV."""
 
     _attr_device_class = MediaPlayerDeviceClass.TV
-    _attr_has_entity_name = True
     _attr_name = None
 
     def __init__(
         self,
         config: dict[str, Any],
-        dev_info: SamsungTVDeviceInfo,
+        entry_id: str,
         entry_data: dict[str, Any] | None,
         session: ClientSession,
         update_token_func: Callable[[str], None],
@@ -262,13 +244,12 @@ class SamsungTVDevice(MediaPlayerEntity):
     ) -> None:
         """Initialize the Samsung device."""
 
+        super().__init__(config, entry_id)
+
         self._entry_data = entry_data
         self._host = config[CONF_HOST]
-        self._mac = config.get(CONF_MAC)
 
         # Set entity attributes
-        self._attr_unique_id = dev_info.unique_id
-        self._attr_device_info = dev_info.device_info
         self._attr_media_title = None
         self._attr_media_image_url = None
         self._attr_media_image_remotely_accessible = False
@@ -315,7 +296,7 @@ class SamsungTVDevice(MediaPlayerEntity):
         self._show_channel_number: bool = False
 
         # ws initialization
-        ws_name = config.get(CONF_WS_NAME, dev_info.name)
+        ws_name = config.get(CONF_WS_NAME, self._name)
         self._ws = SamsungTVWS(
             host=self._host,
             token=config.get(CONF_TOKEN),
@@ -671,7 +652,7 @@ class SamsungTVDevice(MediaPlayerEntity):
         self._source = found_source
         return self._source
 
-    async def _smartthings_keys(self, source_key):
+    async def _smartthings_keys(self, source_key: str):
         """Manage the SmartThings key commands."""
         if not self._st:
             _LOGGER.error(
@@ -688,6 +669,9 @@ class SamsungTVDevice(MediaPlayerEntity):
             await self._st.async_select_source(source_key.replace("ST_", ""))
         elif source_key == "ST_TV":
             await self._st.async_select_source("digitalTv")
+        elif source_key.startswith("ST_VD:"):
+            if cmd := source_key.replace("ST_VD:", ""):
+                await self._st.async_select_vd_source(cmd)
         elif source_key == "ST_CHUP":
             await self._st.async_send_command("stepchannel", "up")
         elif source_key == "ST_CHDOWN":
@@ -709,8 +693,8 @@ class SamsungTVDevice(MediaPlayerEntity):
             if vol_lev.isdigit():
                 await self._st.async_send_command("setvolume", vol_lev)
         else:
-            _LOGGER.error("Unsupported SmartThings command: %s", source_key)
-            return False
+            raise ValueError(f"Unsupported SmartThings command: {source_key}")
+
         return True
 
     def _log_st_error(self, st_error: bool):

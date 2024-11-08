@@ -32,6 +32,7 @@ CONF_ALWAYS_SHOW_DAY = 'alwaysshowday'
 CONF_PRINT_AVAILABLE_WASTE_TYPES = 'printwastetypes'
 CONF_UPDATE_INTERVAL = 'updateinterval'
 CONF_CUSTOMER_ID = 'customerid'
+CONF_CUSTOM_MAPPING = 'custommapping'
 
 PLATFORM_SCHEMA = vol.Schema(
     {
@@ -59,6 +60,7 @@ PLATFORM_SCHEMA = vol.Schema(
         vol.Optional(CONF_PRINT_AVAILABLE_WASTE_TYPES, default=False): cv.boolean,
         vol.Optional(CONF_UPDATE_INTERVAL, default=0): cv.positive_int,
         vol.Optional(CONF_CUSTOMER_ID, default=""): cv.string,
+        vol.Optional(CONF_CUSTOM_MAPPING, default={}): dict,
     }, extra=vol.ALLOW_EXTRA  # Allow extra required due when validating config as sensor (platform key is added to config)
 )
 
@@ -77,19 +79,23 @@ OPZET_COLLECTOR_URLS = {
     'berkelland':               'https://afvalkalender.gemeenteberkelland.nl',
     'blink':                    'https://mijnblink.nl',
     'cranendonck':              'https://afvalkalender.cranendonck.nl',
-    'cyclus':                   'https://afvalkalender.cyclusnv.nl',
+    'cyclus':                   'https://cyclusnv.nl',
     'dar':                      'https://afvalkalender.dar.nl',
+    'defryskemarren':           'https://afvalkalender.defryskemarren.nl',
     'denhaag':                  'https://huisvuilkalender.denhaag.nl',
     'gad':                      'https://inzamelkalender.gad.nl',
     'hvc':                      'https://inzamelkalender.hvcgroep.nl',
     'lingewaard':               'https://afvalwijzer.lingewaard.nl',
     'middelburg-vlissingen':    'https://afvalwijzer.middelburgvlissingen.nl',
     'mijnafvalzaken':           'https://mijnafvalzaken.nl',
-    'montfoort':                'https://afvalkalender.cyclusnv.nl',
+    'montfoort':                'https://cyclusnv.nl',
+    'offalkalinder':            'https://www.offalkalinder.nl',
     'peelenmaas':               'https://afvalkalender.peelenmaas.nl',
     'prezero':                  'https://inzamelwijzer.prezero.nl',
     'purmerend':                'https://afvalkalender.purmerend.nl',
+    'rwm':             	        'https://rwm.nl',
     'schouwen-duiveland':       'https://afvalkalender.schouwen-duiveland.nl',
+    'sliedrecht':               'https://afvalkalender.sliedrecht.nl',
     'spaarnelanden':            'https://afvalwijzer.spaarnelanden.nl',
     'sudwestfryslan':           'https://afvalkalender.sudwestfryslan.nl',
     'suez':                     'https://inzamelwijzer.prezero.nl',
@@ -108,48 +114,51 @@ XIMMIO_COLLECTOR_IDS = {
     'hellendoorn':      '24434f5b-7244-412b-9306-3a2bd1e22bc1',
     'meerlanden':       '800bf8d7-6dd1-4490-ba9d-b419d6dc8a45',
     'ximmio':           '800bf8d7-6dd1-4490-ba9d-b419d6dc8a45',
-    'meppel':           'b7a594c7-2490-4413-88f9-94749a3ec62a',
     'rad':              '13a2cad9-36d0-4b01-b877-efcb421a864d',
     'twentemilieu':     '8d97bb56-5afd-4cbc-a651-b4f7314264b4',
     'waardlanden':      '942abcf6-3775-400d-ae5d-7380d728b23c',
     'westland':         '6fc75608-126a-4a50-9241-a002ce8c8a6c',
+    'woerden':          '06856f74-6826-4c6a-aabf-69bc9d20b5a6',
     'reinis':           '9dc25c8a-175a-4a41-b7a1-83f237a80b77',
 }
 
 BURGERPORTAAL_COLLECTOR_IDS = {
-    'rmn':              '138204213564933597',
+    'assen':            '138204213565303512',
     'bar':              '138204213564933497',
+    'rmn':              '138204213564933597',
 }
 
 DEPRECATED_AND_NEW_WASTECOLLECTORS = {
     'cure':             'mijnafvalwijzer',
+    'meppel':           'mijnafvalwijzer',
     'area':             'areareiniging',
     'ophaalkalender':   'recycleapp',
     'circulus-berkel':  'circulus',
     'alkmaar':          'hvc',
+    'ôffalkalinder':    'offalkalinder',
 }
 
-WASTE_TYPE_BRANCHES = 'takken'
-WASTE_TYPE_BULKLITTER = 'grofvuil'
-WASTE_TYPE_GLASS = 'glas'
-WASTE_TYPE_GREEN = 'gft'
-WASTE_TYPE_GREENGREY = 'duobak'
-WASTE_TYPE_GREY = 'restafval'
-WASTE_TYPE_GREY_BAGS = 'restafvalzakken'
-WASTE_TYPE_SORTI = 'sortibak'
-WASTE_TYPE_KCA = 'chemisch'
-WASTE_TYPE_KCA_LOCATION = 'chemisch-brengen'
-WASTE_TYPE_MILIEUB = 'milieuboer'
-WASTE_TYPE_PAPER_PMD = 'papier-pmd'
-WASTE_TYPE_PMD_GREY = 'pmd-restafval'
-WASTE_TYPE_PACKAGES = 'pmd'
-WASTE_TYPE_PAPER = 'papier'
-WASTE_TYPE_PLASTIC = 'plastic'
-WASTE_TYPE_SOFT_PLASTIC = 'zacht-plastic'
-WASTE_TYPE_REMAINDER = 'restwagen'
-WASTE_TYPE_TEXTILE = 'textiel'
-WASTE_TYPE_TREE = 'kerstbomen'
-WASTE_TYPE_BULKYGARDENWASTE = 'tuinafval'
+WASTE_TYPE_BRANCHES = 'Takken'
+WASTE_TYPE_BULKLITTER = 'Grofvuil'
+WASTE_TYPE_GLASS = 'Glas'
+WASTE_TYPE_GREEN = 'GFT'
+WASTE_TYPE_GREENGREY = 'Duobak'
+WASTE_TYPE_GREY = 'Restafval'
+WASTE_TYPE_GREY_BAGS = 'Restafvalzakken'
+WASTE_TYPE_SORTI = 'Sortibak'
+WASTE_TYPE_KCA = 'Chemisch'
+WASTE_TYPE_KCA_LOCATION = 'Chemisch-brengen'
+WASTE_TYPE_MILIEUB = 'Milieuboer'
+WASTE_TYPE_PAPER_PMD = 'Papier-PMD'
+WASTE_TYPE_PMD_GREY = 'PMD-Restafval'
+WASTE_TYPE_PACKAGES = 'PMD'
+WASTE_TYPE_PAPER = 'Papier'
+WASTE_TYPE_PLASTIC = 'Plastic'
+WASTE_TYPE_SOFT_PLASTIC = 'Zacht-Plastic'
+WASTE_TYPE_REMAINDER = 'Restwagen'
+WASTE_TYPE_TEXTILE = 'Textiel'
+WASTE_TYPE_TREE = 'Kerstbomen'
+WASTE_TYPE_BULKYGARDENWASTE = 'Tuinafval'
 
 FRACTION_ICONS = {
     'gft':              'data:image/svg+xml;base64,PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjwhRE9DVFlQRSBzdmcgUFVCTElDICItLy9XM0MvL0RURCBTVkcgMS4xLy9FTiIgImh0dHA6Ly93d3cudzMub3JnL0dyYXBoaWNzL1NWRy8xLjEvRFREL3N2ZzExLmR0ZCI+DQo8IS0tIENyZWF0b3I6IENvcmVsRFJBVyBYNiAtLT4NCjxzdmcgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIiB4bWw6c3BhY2U9InByZXNlcnZlIiB3aWR0aD0iNS4zMzMzM2luIiBoZWlnaHQ9IjUuMzMzMzNpbiIgdmVyc2lvbj0iMS4xIiBzdHlsZT0ic2hhcGUtcmVuZGVyaW5nOmdlb21ldHJpY1ByZWNpc2lvbjsgdGV4dC1yZW5kZXJpbmc6Z2VvbWV0cmljUHJlY2lzaW9uOyBpbWFnZS1yZW5kZXJpbmc6b3B0aW1pemVRdWFsaXR5OyBmaWxsLXJ1bGU6ZXZlbm9kZDsgY2xpcC1ydWxlOmV2ZW5vZGQiDQp2aWV3Qm94PSIwIDAgNTMzMyA1MzMzIg0KIHhtbG5zOnhsaW5rPSJodHRwOi8vd3d3LnczLm9yZy8xOTk5L3hsaW5rIj4NCiA8ZGVmcz4NCiAgPHN0eWxlIHR5cGU9InRleHQvY3NzIj4NCiAgIDwhW0NEQVRBWw0KICAgIC5zdHIwIHtzdHJva2U6IzIzMUYyMDtzdHJva2Utd2lkdGg6MTExLjExfQ0KICAgIC5maWwwIHtmaWxsOm5vbmU7ZmlsbC1ydWxlOm5vbnplcm99DQogICBdXT4NCiAgPC9zdHlsZT4NCiA8L2RlZnM+DQogPGcgaWQ9IkxheWVyX3gwMDIwXzEiPg0KICA8bWV0YWRhdGEgaWQ9IkNvcmVsQ29ycElEXzBDb3JlbC1MYXllciIvPg0KICA8cGF0aCBjbGFzcz0iZmlsMCBzdHIwIiBkPSJNNTI3NSAyNjY1YzAsMTQ0MSAtMTE2OCwyNjEwIC0yNjEwLDI2MTAgLTE0NDEsMCAtMjYxMCwtMTE2OCAtMjYxMCwtMjYxMCAwLC0xNDQxIDExNjgsLTI2MTAgMjYxMCwtMjYxMCAxNDQxLDAgMjYxMCwxMTY4IDI2MTAsMjYxMHptMCAweiIvPg0KICA8cGF0aCBjbGFzcz0iZmlsMCBzdHIwIiBkPSJNMzEwOSAyMjQ4YzAsMCAtNTEzLDQzNyAtMTg2LDEwOTMgMTA3LDIxMyAxOTUsMzQ0IDI2NSw0MjQiLz4NCiAgPHBhdGggY2xhc3M9ImZpbDAgc3RyMCIgZD0iTTE5NzggMzY1MGM4NDMsLTcyOCAtNTksLTE2MzEgLTU5LC0xNjMxIi8+DQogIDxwYXRoIGNsYXNzPSJmaWwwIHN0cjAiIGQ9Ik0yMzY3IDIxNjBjMCwwIDMyNyw4NjMgLTg3LDE1MTkiLz4NCiAgPHBhdGggY2xhc3M9ImZpbDAgc3RyMCIgZD0iTTI5NTQgMzc1MWMtMTU5LC0xNzMgLTUzMiwtNjI5IC00MDEsLTk2OCA3NSwtMTk1IDI4NCwtNDM0IDQwMiwtNTY0Ii8+DQogIDxwYXRoIGNsYXNzPSJmaWwwIHN0cjAiIGQ9Ik0yOTk1IDIxNzFjLTE1MCwtODIgLTQwNSwtMTYxIC03MDYsMzAgLTExLDAgLTY4OSwtMzcwIC05NDAsLTE5NiAtMjUxLDE3NCAxNzUsLTE5NiAxNzUsLTE5NiAwLDAgNjgxLC00NjYgMTIxNCwtMzkgNyw2IDE0LDEyIDIxLDE4IDExLDAgNjU2LC01MTIgMTE2OSwyMiAtMTEsMCAtNzMyLDY1IC03ODcsNDU3IC00LDQgLTU3LC00NiAtMTQ3LC05NnoiLz4NCiAgPHBhdGggY2xhc3M9ImZpbDAgc3RyMCIgZD0iTTE1NjkgMzgxMmMxMzEsMTIwIDQyNiw1NDQgMTAyNyw3NiAwLDAgNDkyLDQ0NiAxMDM4LDEzMCAtMTEsMCAyOTUsLTc2IDQwNCwtNDM1IC03NywzMyAtMjQwLDI1MCAtNjAxLDEyMCAwLDAgLTQwNCwyNjEgLTcyMSwtMTA5IDAsLTIyIC00OTIsMTc0IC02OTksMCAwLC0xMSAtMzE3LDIzOSAtNTc5LC00MyAwLDAgMCwxNDEgMTMxLDI2MXptMCAweiIvPg0KICA8cGF0aCBjbGFzcz0iZmlsMCBzdHIwIiBkPSJNMzQ3MCAxMDk4YzAsMCAtNzA5LDE0MiAtNjk4LDYzMyAtMTEsMCAtMjI5LC0yNzMgNjExLC04MjlsODcgMTk2em0wIDB6Ii8+DQogPC9nPg0KPC9zdmc+DQo=',
