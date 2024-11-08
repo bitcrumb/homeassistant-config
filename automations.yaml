@@ -11,7 +11,7 @@
   - service: switch.turn_on
     data: {}
     target:
-      entity_id: switch.tapo_camera_privacy
+      entity_id: switch.g5_flex_privacy_mode
   mode: single
 - id: '1621928552564'
   alias: "\U0001F4F9 Turn off \"privacy mode\" of camera when no people at home"
@@ -26,7 +26,7 @@
   - service: switch.turn_off
     data: {}
     target:
-      entity_id: switch.tapo_camera_privacy
+      entity_id: switch.g5_flex_privacy_mode
   mode: single
 - id: 0c363e5fa5164f67b91bafc26f04de05
   alias: ♻️ Send garbage reminder
@@ -43,10 +43,11 @@
       minutes: 0
       seconds: 0
       milliseconds: 0
+    enabled: true
   - service: notify.lode_devices
     data:
       title: ♻️ Afvalophaling
-      message: 'Morgen worden volgende zaken opgehaald: {{ states.sensor.recycleapp_morgen.state
+      message: 'Morgen worden volgende zaken opgehaald: {{ states.sensor.recycleapp_tomorrow.state
         }}'
   mode: single
 - id: '1632921047367'
@@ -152,21 +153,16 @@
   trigger:
   - platform: state
     entity_id:
-    - light.led_fridge_left
-    - light.led_fridge_right
-    - light.led_tv_left
-    - light.led_tv_center
-    - light.led_tv_right
-    - light.led_office_desk_left
-    - light.led_office_desk_center
-    - light.led_office_desk_right
-    - light.led_office_wall_left
-    - light.led_office_wall_right
+    - light.led_living
+    - light.group_dining_room
+    - light.group_dining_table
+    - light.group_kitchen
+    - light.group_office_wall
+    - light.group_office_desk
     - light.led_office_mood
-    - light.led_strip_otis
-    - light.led_strip_juna
-    - light.led_kitchen_right
-    - light.led_kitchen_left
+    - light.group_tv_spots
+    - light.led_strip_tv
+    - light.group_fridge
     to: unavailable
     for:
       minutes: 5
@@ -204,7 +200,7 @@
       message: Tijd om je klaar te maken voor school!
   mode: single
 - id: '1638859694197'
-  alias: "\U0001F976 Fridge plug turned off notification"
+  alias: "\U0001F976 Fridge smart plug turned off notification"
   description: ''
   trigger:
   - platform: state
@@ -213,14 +209,21 @@
       hours: 0
       minutes: 0
       seconds: 0
-      milliseconds: 0
     entity_id: switch.smart_plug_fridge
+  - platform: state
+    to: 'off'
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    entity_id:
+    - switch.smart_plug_fridge
   condition: []
   action:
   - service: notify.lode_devices
     data:
       title: Device offline detected!
-      message: "\U0001F976 The fridge plug was turned off!"
+      message: "\U0001F976 The fridge smart plug was turned off!"
       data:
         priority: high
         ttl: 0
@@ -240,7 +243,7 @@
   - service: switch.turn_off
     data: {}
     target:
-      entity_id: switch.tapo_camera_privacy
+      entity_id: switch.g5_flex_privacy_mode
   mode: single
 - id: '1638957990044'
   alias: "\U0001F4F9 Turn on \"privacy mode\" at day"
@@ -255,7 +258,7 @@
   - service: switch.turn_on
     data: {}
     target:
-      entity_id: switch.tapo_camera_privacy
+      entity_id: switch.g5_flex_privacy_mode
   mode: single
 - id: '1650973895443'
   alias: "\U0001F699 Ellen leaves from work"
@@ -278,22 +281,23 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: weather.home
-    above: '20'
+    entity_id:
+    - weather.home
+    above: 30
     attribute: wind_speed
   condition:
   - condition: state
     entity_id: cover.awning
     state: open
   action:
-  - service: cover.close_cover
-    target:
+  - target:
       entity_id: cover.awning
     data: {}
-  - service: notify.lode_devices
-    data:
+    action: cover.close_cover
+  - data:
       message: De luifel werd gesloten omdat er hardere wind wordt voorspeld.
       title: "\U0001F32C Luifel gesloten door wind"
+    action: notify.lode_devices
   mode: single
 - id: '1657790977221'
   alias: ⛱ ☀️ Open awning when too bright sunlight and not windy and before 15h30
@@ -409,11 +413,12 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.smart_plug_dishwasher_power
-    below: 20
+    entity_id:
+    - sensor.smart_plug_dishwasher_power
+    below: 100
     for:
-      hours: 0
-      minutes: 20
+      hours: 30
+      minutes: 0
       seconds: 0
   condition: []
   action:
@@ -427,8 +432,9 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.smart_plug_washer_power
-    below: 15
+    entity_id:
+    - sensor.smart_plug_washer_power
+    below: 500
     for:
       hours: 0
       minutes: 15
@@ -445,11 +451,12 @@
   description: ''
   trigger:
   - platform: numeric_state
-    entity_id: sensor.smart_plug_dryer_power
-    below: 15
+    entity_id:
+    - sensor.smart_plug_dryer_power
+    below: 500
     for:
       hours: 0
-      minutes: 5
+      minutes: 30
       seconds: 0
   condition: []
   action:
@@ -494,24 +501,6 @@
       title: Internet connectivity has been restored.
       message: "\U0001F30D The internet connection is online again!"
   mode: parallel
-- id: '1673022556063'
-  alias: Wake up iPad Mini when motion detected
-  description: ''
-  trigger:
-  - platform: state
-    entity_id:
-    - binary_sensor.motion_detected_in_living_room
-    to: 'on'
-  condition:
-  - condition: state
-    entity_id: binary_sensor.no_one_home
-    state: 'off'
-  action:
-  - service: notify.mobile_app_ipad_mini_otis
-    data:
-      title: Wake up!
-      message: Waking you up, since motion was detected.
-  mode: single
 - id: '1673380802036'
   alias: Set dark theme when sun sets
   description: ''
@@ -544,7 +533,7 @@
   trigger:
   - platform: state
     entity_id:
-    - switch.tapo_camera_privacy
+    - switch.g5_flex_privacy_mode
     from: 'on'
     to: 'off'
   condition: []
@@ -554,3 +543,35 @@
       message: Privacy mode of the Tapo webcam was disabled.
       title: "\U0001F440 Privacy mode disabled"
   mode: single
+- id: '1708671176465'
+  alias: "\U0001F976 Freezer smart plug turned off notification"
+  description: ''
+  trigger:
+  - platform: state
+    to: 'off'
+    for:
+      hours: 0
+      minutes: 0
+      seconds: 0
+    entity_id:
+    - switch.smart_plug_freezer
+  - platform: state
+    to: 'off'
+    for:
+      hours: 1
+      minutes: 0
+      seconds: 0
+    entity_id:
+    - switch.smart_plug_freezer
+  condition: []
+  action:
+  - service: notify.lode_devices
+    data:
+      title: Device offline detected!
+      message: "\U0001F976 The freezer smart plug was turned off!"
+      data:
+        priority: high
+        ttl: 0
+        color: red
+  mode: parallel
+  max: 10
