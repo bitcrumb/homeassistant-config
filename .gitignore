@@ -31,8 +31,5 @@ zigbee2mqtt
 rtsp2webrtc_v5_aarch64
 google_assistant_service_account.json
 aircast.xml
-
-# Feedreader
-feedreader.pickle
 go2rtc*
 music_assistant.db.old

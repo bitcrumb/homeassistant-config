@@ -1,9 +1,0 @@
-input_select:
-  chromecast_audio:
-    name: Chromecast Audio
-    options:
-      - "alle_speakers"
-      - "hub_keuken"
-      - "mini_badkamer"
-      - "mini_slaapkamer_ouders"
-    icon: mdi:cast-audio

@@ -575,3 +575,87 @@
         color: red
   mode: parallel
   max: 10
+- id: '1731304150744'
+  alias: "\U0001F525 Automatisch verwarming uit"
+  description: ''
+  triggers:
+  - trigger: time
+    at: '22:00:00'
+  conditions: []
+  actions:
+  - action: climate.turn_off
+    metadata: {}
+    data: {}
+    target:
+      entity_id: climate.lsc_glass_panel_heater_2000w
+  mode: single
+- id: '1737306882660'
+  alias: "\U0001F975 Turn heating Juna bedroom on"
+  description: ''
+  triggers:
+  - trigger: calendar
+    entity_id: calendar.calendar
+    event: start
+    offset: 0:0:0
+  conditions:
+  - condition: state
+    entity_id: calendar.calendar
+    attribute: message
+    state: Verwarming Juna
+  actions:
+  - device_id: 4726b70204a83a54a6ef756bac77a90b
+    domain: climate
+    entity_id: 664b013120d823a443db5ec04bf439c9
+    type: set_hvac_mode
+    hvac_mode: heat
+  mode: single
+- id: '1737306975216'
+  alias: "\U0001F975 Turn heating Juna bedroom off"
+  description: ''
+  triggers:
+  - trigger: calendar
+    entity_id: calendar.calendar
+    event: end
+    offset: 0:0:0
+  conditions:
+  - condition: state
+    entity_id: calendar.calendar
+    attribute: message
+    state: Verwarming Juna
+  actions:
+  - device_id: 4726b70204a83a54a6ef756bac77a90b
+    domain: climate
+    entity_id: 664b013120d823a443db5ec04bf439c9
+    type: set_hvac_mode
+    hvac_mode: 'off'
+  mode: single
+- id: '1737308270027'
+  alias: TEST ON
+  description: ''
+  triggers:
+  - trigger: calendar
+    entity_id: calendar.calendar
+    event: start
+    offset: 0:0:0
+  conditions: []
+  actions:
+  - type: turn_on
+    device_id: 1f7c835e2bb9df82e86f6b96b2d1fd2a
+    entity_id: 065b630e9b87160d2e2d8f7e05108a34
+    domain: light
+  mode: single
+- id: '1737308312822'
+  alias: TEST OFF
+  description: ''
+  triggers:
+  - trigger: calendar
+    entity_id: calendar.calendar
+    event: end
+    offset: -0:0:0
+  conditions: []
+  actions:
+  - type: turn_off
+    device_id: 1f7c835e2bb9df82e86f6b96b2d1fd2a
+    entity_id: 065b630e9b87160d2e2d8f7e05108a34
+    domain: light
+  mode: single
